@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Piattaforma Cyber Kill Chain</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>🔍 Fase: Ricognizione</h1>
+
+  <div id="terminal">
+    <pre id="output"></pre>
+    <div>
+      <span style="color: #0f0;">user@webshell:~$</span>
+      <input type="text" id="commandInput" autofocus onkeydown="onEnter(event)">
+    </div>
+  </div>
+
+  <div id="chatbot">
+    <h3>🤖 Chatbot AI</h3>
+    <p id="chat-response">Suggerimento del bot qui...</p>
+  </div>
+
+    <div id="direct-chat">
+  <h3>💬 Chat libera</h3>
+  <input type="text" id="chatInput" placeholder="Scrivi al chatbot..." />
+  <button id="sendChat">Invia</button>
+  <div id="chatHistory"></div>
+</div>
+
+
+<script>
+  // Aggiunge una riga di testo al terminale
+  function mostraOutput(text) {
+    const out = document.getElementById("output");
+    out.innerText += text + "\n";
+    out.scrollTop = out.scrollHeight;
+  }
+
+  // Richiama il chatbot per un consiglio basato sull'ultimo output
+  function richiestaChatbot(ultimoOutput) {
+    fetch("/chatbot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ output: ultimoOutput })
+    })
+    .then(res => res.json())
+    .then(data => {
+      renderChatbotResponse(data.response);
+    })
+    .catch(err => console.error("Errore chatbot:", err));
+  }
+
+  // Renderizza la risposta del chatbot, trasformando `tool` in link cliccabili
+  function renderChatbotResponse(text) {
+    const chatP = document.getElementById("chat-response");
+    // Sostituisci ogni occorrenza di `qualcosa` con un <button>
+    const html = text.replace(/`([^`]+)`/g, (match, tool) => {
+      return `<button class="tool-btn" data-tool="${tool}">\`${tool}\`</button>`;
+    });
+    chatP.innerHTML = html;
+
+    // Aggiungi event listener a ciascun button generato
+    chatP.querySelectorAll(".tool-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tool = btn.getAttribute("data-tool");
+        // Aggiungi il comando dinamico e lo esegui
+        addAndRunTool(tool);
+      });
+    });
+  }
+
+  // Esegue add_command sul server e poi esegue il tool appena aggiunto
+  function addAndRunTool(tool) {
+    fetch("/add_command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: tool })
+    })
+    .then(res => res.json())
+    .then(resp => {
+      if (resp.status === "ok") {
+         mostraOutput(`[Sistema]: Comando "${tool}" aggiunto alla lista dei comandi disponibili.`);
+      }
+    })
+    .catch(err => console.error("Errore add_command:", err));
+  }
+
+  // Flusso di esecuzione di un comando: output → chatbot
+  function executeCommand(cmd) {
+    fetch("/terminal", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({command: cmd})
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Mostra l'output (statico o dinamico)
+      mostraOutput(data.output);
+      // Chiedi consiglio al chatbot su come procedere
+      richiestaChatbot(data.output);
+    })
+    .catch(err => {
+      console.error("Errore terminal:", err);
+      mostraOutput("[Errore di sistema]");
+    });
+  }
+
+
+// Aggiorna la cronologia chat libera
+function appendChat(role, txt) {
+  const hist = document.getElementById("chatHistory");
+  const cls = role === 'user' ? 'chat-user' : 'chat-bot';
+  hist.innerHTML += `<div class="${cls}"><strong>${role}:</strong> ${txt}</div>`;
+  hist.scrollTop = hist.scrollHeight;
+}
+
+// Handler per inviare la chat libera
+document.getElementById("sendChat").onclick = () => {
+  const input = document.getElementById("chatInput");
+  const msg = input.value.trim();
+  if (!msg) return;
+  appendChat('Tu', msg);
+  input.value = "";
+  fetch("/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message: msg})
+  })
+  .then(r => r.json())
+  .then(data => appendChat('Bot', data.response))
+  .catch(console.error);
+};
+
+
+  // Gestione del tasto Enter nel prompt
+  function onEnter(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const inputEl = document.getElementById("commandInput");
+      let cmd = inputEl.value.trim();
+      if (!cmd) return;
+      if (cmd.toLowerCase() === "clear") {
+        document.getElementById("output").innerText = "";
+        inputEl.value = "";
+        return;
+      }
+      // Stampa il prompt e resetta l'input
+      mostraOutput(`$ ${cmd}`);
+      inputEl.value = "";
+      // Esegui il comando
+      executeCommand(cmd);
+    }
+  }
+
+  document.getElementById("commandInput")
+          .addEventListener("keydown", onEnter);
+</script>
+
+
+</body>
+</html>

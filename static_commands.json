@@ -1,0 +1,20 @@
+{
+  "shopcorp_web": {
+    "hostname": "shopcorp.local",
+    "ip": "10.10.10.15",
+    "os": "Ubuntu 20.04 LTS",
+    "servizi": ["ssh", "http"],
+    "osint": {
+      "linkedin": "Mario Rossi – DevOps Engineer presso ShopCorp",
+      "github": "https://github.com/shopcorp/frontend"
+    },
+    "output_reconnaissance": {
+      "help": "Comandi disponibili:\n- nmap shopcorp.local\n- whois shopcorp.local\n- osint linkedin\n- osint github\n- clear",
+      "nmap shopcorp.local": "Starting Nmap 7.80 ( https://nmap.org )\nNmap scan report for shopcorp.local (10.10.10.15)\nHost is up (0.025s latency).\nPORT   STATE SERVICE VERSION\n22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3\n80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))\n\nService detection performed. Please report any incorrect results.",
+      "whois shopcorp.local": "Domain Name: SHOPCORP.LOCAL\nRegistrar: PRIVATE REGISTRATION\nRegistrant Name: REDACTED FOR PRIVACY\nName Server: ns1.shopcorp.local\nName Server: ns2.shopcorp.local",
+      "osint linkedin": "LinkedIn OSINT:\n- Mario Rossi (DevOps Engineer)\n- 5 anni di esperienza in infrastrutture Cloud\n- Interessi: Kubernetes, CI/CD",
+      "osint github": "GitHub OSINT:\n- Repository trovata: shopcorp/frontend\n- Tecnologie: React.js, Node.js\n- Ultimo commit: 2025-04-15 12:34 UTC",
+      "clear": ""
+    }
+  }
+}
