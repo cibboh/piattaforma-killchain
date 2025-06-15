@@ -2,8 +2,49 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Piattaforma Cyber Kill Chain</title>
+  <title>Piattaforma Cyber Kill Chain - Livello 1</title>
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .tool-btn {
+      background-color: #3c3f58;
+      color: #f0f0f0;
+      border: none;
+      padding: 5px 10px;
+      margin: 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .tool-btn:hover {
+      background-color: #55587a;
+    }
+    #feedback-form {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #444;
+      background-color: #2e2e3e;
+      display: none;
+    }
+    #feedback-form textarea {
+      width: 100%;
+      height: 60px;
+      background: #1e1e2e;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      padding: 5px;
+    }
+    #feedback-form button {
+      margin-top: 5px;
+      background: #c75450;
+      border: none;
+      padding: 5px 10px;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #feedback-form button:hover {
+      background: #a6423e;
+    }
+  </style>
 </head>
 <body>
   <h1>🔍 Fase: Ricognizione</h1>
@@ -19,85 +60,93 @@
   <div id="chatbot">
     <h3>🤖 Chatbot AI</h3>
     <p id="chat-response">Suggerimento del bot qui...</p>
+    <button id="show-feedback">Questo suggerimento è sbagliato</button>
+    <div id="feedback-form">
+      <p>Spiega perché il suggerimento è sbagliato:</p>
+      <textarea id="feedback-text" placeholder="Ad es.: 'Non porta alla fase successiva perché...'"></textarea>
+      <button id="send-feedback">Invia feedback</button>
+    </div>
   </div>
 
-    <div id="direct-chat">
-  <h3>💬 Chat libera</h3>
-  <input type="text" id="chatInput" placeholder="Scrivi al chatbot..." />
-  <button id="sendChat">Invia</button>
-  <div id="chatHistory"></div>
-</div>
-
-
 <script>
-  // Aggiunge una riga di testo al terminale
+  let lastSuggestion = "";
+
   function mostraOutput(text) {
     const out = document.getElementById("output");
     out.innerText += text + "\n";
     out.scrollTop = out.scrollHeight;
   }
 
-  // Richiama il chatbot per un consiglio basato sull'ultimo output
   function richiestaChatbot(ultimoOutput) {
     fetch("/chatbot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ output: ultimoOutput })
+      body: JSON.stringify({
+        output: ultimoOutput,
+        command: lastCommand,
+        fase: "ricognizione"
+      })
     })
     .then(res => res.json())
     .then(data => {
-      renderChatbotResponse(data.response);
+      const suggerimento = data.suggestion;
+      renderChatbotResponse(suggerimento);
     })
     .catch(err => console.error("Errore chatbot:", err));
   }
 
-  // Renderizza la risposta del chatbot, trasformando `tool` in link cliccabili
-  function renderChatbotResponse(text) {
+  function renderChatbotResponse(comando) {
     const chatP = document.getElementById("chat-response");
-    // Sostituisci ogni occorrenza di `qualcosa` con un <button>
-    const html = text.replace(/`([^`]+)`/g, (match, tool) => {
-      return `<button class="tool-btn" data-tool="${tool}">\`${tool}\`</button>`;
-    });
-    chatP.innerHTML = html;
-
-    // Aggiungi event listener a ciascun button generato
+    if (!comando) {
+      chatP.innerText = "Nessun suggerimento nuovo.";
+      lastSuggestion = "";
+      return;
+    }
+    lastSuggestion = comando;
+    chatP.innerHTML = 
+      `Suggerimento: <button class="tool-btn" data-tool="${comando}">\`${comando}\`</button>`;
     chatP.querySelectorAll(".tool-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const tool = btn.getAttribute("data-tool");
-        // Aggiungi il comando dinamico e lo esegui
         addAndRunTool(tool);
       });
     });
   }
 
-  // Esegue add_command sul server e poi esegue il tool appena aggiunto
   function addAndRunTool(tool) {
     fetch("/add_command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command: tool })
+      body: JSON.stringify({
+        command: tool,
+        fase: "ricognizione"
+      })
     })
     .then(res => res.json())
     .then(resp => {
       if (resp.status === "ok") {
-         mostraOutput(`[Sistema]: Comando "${tool}" aggiunto alla lista dei comandi disponibili.`);
+        mostraOutput(`[Sistema]: Comando dinamico "${tool}" aggiunto.`);
+        executeCommand(tool);
+      } else {
+        mostraOutput(`[Sistema]: Errore durante l'aggiunta di "${tool}".`);
       }
     })
     .catch(err => console.error("Errore add_command:", err));
   }
 
-  // Flusso di esecuzione di un comando: output → chatbot
   function executeCommand(cmd) {
+    lastCommand = cmd;
     fetch("/terminal", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({command: cmd})
+      body: JSON.stringify({
+        command: cmd,
+        fase: "ricognizione"
+      })
     })
     .then(res => res.json())
     .then(data => {
-      // Mostra l'output (statico o dinamico)
       mostraOutput(data.output);
-      // Chiedi consiglio al chatbot su come procedere
       richiestaChatbot(data.output);
     })
     .catch(err => {
@@ -106,57 +155,65 @@
     });
   }
 
-
-// Aggiorna la cronologia chat libera
-function appendChat(role, txt) {
-  const hist = document.getElementById("chatHistory");
-  const cls = role === 'user' ? 'chat-user' : 'chat-bot';
-  hist.innerHTML += `<div class="${cls}"><strong>${role}:</strong> ${txt}</div>`;
-  hist.scrollTop = hist.scrollHeight;
-}
-
-// Handler per inviare la chat libera
-document.getElementById("sendChat").onclick = () => {
-  const input = document.getElementById("chatInput");
-  const msg = input.value.trim();
-  if (!msg) return;
-  appendChat('Tu', msg);
-  input.value = "";
-  fetch("/chat", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({message: msg})
-  })
-  .then(r => r.json())
-  .then(data => appendChat('Bot', data.response))
-  .catch(console.error);
-};
-
-
-  // Gestione del tasto Enter nel prompt
   function onEnter(event) {
     if (event.key === "Enter") {
       event.preventDefault();
       const inputEl = document.getElementById("commandInput");
-      let cmd = inputEl.value.trim();
+      let cmd = inputEl.value.trim().toLowerCase();
       if (!cmd) return;
-      if (cmd.toLowerCase() === "clear") {
+      if (cmd === "clear") {
         document.getElementById("output").innerText = "";
         inputEl.value = "";
         return;
       }
-      // Stampa il prompt e resetta l'input
       mostraOutput(`$ ${cmd}`);
       inputEl.value = "";
-      // Esegui il comando
       executeCommand(cmd);
     }
   }
 
   document.getElementById("commandInput")
-          .addEventListener("keydown", onEnter);
+    .addEventListener("keydown", onEnter);
+
+  document.getElementById("show-feedback").onclick = () => {
+    const form = document.getElementById("feedback-form");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  };
+
+  document.getElementById("send-feedback").onclick = () => {
+    const motivo = document.getElementById("feedback-text").value.trim();
+    if (!lastSuggestion) {
+      alert("Non c'è suggerimento da correggere.");
+      return;
+    }
+    if (!motivo) {
+      alert("Scrivi il motivo dell'errore.");
+      return;
+    }
+    const payload = {
+      fase: "ricognizione",
+      suggerimento_errato: lastSuggestion,
+      motivo: motivo
+    };
+    fetch("/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(resp => {
+      if (resp.status === "ok") {
+        alert("Feedback inviato. Grazie!");
+        document.getElementById("feedback-text").value = "";
+        document.getElementById("feedback-form").style.display = "none";
+      } else {
+        alert("Errore durante l'invio del feedback.");
+      }
+    })
+    .catch(err => console.error("Errore feedback:", err));
+  };
+
+  let lastCommand = ""; // usato per /chatbot dopo executeCommand
 </script>
-
-
 </body>
 </html>
