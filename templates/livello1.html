@@ -4,96 +4,283 @@
   <meta charset="UTF-8">
   <title>Piattaforma Cyber Kill Chain - Livello 1</title>
   <link rel="stylesheet" href="/static/style.css">
-  <style>
-    .tool-btn {
-      background-color: #3c3f58;
-      color: #f0f0f0;
-      border: none;
-      padding: 5px 10px;
-      margin: 2px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .tool-btn:hover { background-color: #55587a; }
-    #feedback-form {
-      margin-top: 10px; padding: 10px; border: 1px solid #444;
-      background-color: #2e2e3e; display: none;
-    }
-    #feedback-form textarea {
-      width: 100%; height: 60px; background: #1e1e2e; color: #f0f0f0;
-      border: 1px solid #444; padding: 5px;
-    }
-    #feedback-form button {
-      margin-top: 5px; background: #c75450; border: none; padding: 5px 10px;
-      color: white; cursor: pointer; border-radius: 4px;
-    }
-    #feedback-form button:hover { background: #a6423e; }
-    #modaleSuggerimento {
-      display: none; border: 2px solid #444; background: #222;
-      padding: 15px; max-width: 420px; margin-top: 10px;
-    }
-    /* ----------- FEEDBACK OUTPUT ----------- */
-    #ai-output-section {
-      margin-top: 18px;
-    }
-    #ai-output-section label { color: #fafaff; }
-    #ai-output {
-      background: #161628;
-      color: #f0f0f0;
-      padding: 6px;
-      border-radius: 3px;
-      border: 1px solid #22224a;
-      min-height: 35px;
-    }
-    #btn-feedback {
-      margin-top: 10px;
-      background-color: #c75450;
-      color: #fff;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #btn-feedback:hover { background: #a6423e; }
-    #feedback-form-section {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #444;
-      background-color: #2e2e3e;
-      display: none;
-      max-width: 470px;
-    }
-    #feedback-form-section textarea {
-      width: 100%;
-      height: 60px;
-      background: #1e1e2e;
-      color: #f0f0f0;
-      border: 1px solid #444;
-      padding: 5px;
-      margin-bottom: 5px;
-    }
-    #feedback-form-section button {
-      margin-top: 5px;
-      background: #c75450;
-      border: none;
-      padding: 5px 10px;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    #feedback-form-section button:hover { background: #a6423e; }
+  <style> 
+body {
+  background: #18191b;
+  color: #f0f0f0;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+}
+h1 {
+  color: #54ff64;
+  font-weight: bold;
+  font-size: 2.3em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+#btn-killchain-help {
+  margin-left: 12px;
+  font-size: 1em; /* più piccolo */
+  cursor: pointer;
+  background: transparent;
+  color: #88f;
+  border: none;
+  border-radius: 50%;
+  padding: 2px 6px;
+  transition: background 0.2s;
+}
+
+#btn-killchain-help:hover {
+  background: #2a2e3a;
+}
+
+
+#terminal {
+  background: #101014;
+  border: 1.5px solid #25e334;
+  border-radius: 8px;
+  max-width: 950px;
+  margin: 0 0 18px 0;  /* ← tolto centramento */
+  padding: 24px 28px 15px 28px;
+  box-shadow: 0 0 12px #0008;
+  position: relative;
+  min-height: 230px;
+}
+
+#output {
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 130px;
+  font-size: 1.09em;
+  color: #6fff88;
+  padding-bottom: 10px;
+}
+#last-command-line {
+  min-height: 1.4em;
+  font-size: 1.08em;
+  color: #d4f3c2;
+  margin-bottom: 0;
+  font-family: inherit;
+}
+input[type="text"]#commandInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #0f0;
+  font-family: inherit;
+  font-size: 1.08em;
+  width: 75%;
+  caret-color: #fff;
+  padding-left: 2px;
+}
+input[type="text"]#commandInput:focus {
+  border-bottom: 2px solid #09f;
+  background: #222637;
+}
+#ai-output-section {
+  margin-top: 24px;
+  background: #181a22;
+  border: 2px solid #2d3850;
+  border-radius: 8px;
+  box-shadow: 0 2px 18px #0005;
+  padding: 18px 22px 14px 22px;
+  max-width: 680px;
+  margin: 30px 0 18px 0;
+  position: relative;
+}
+#ai-output-section label,
+#ai-output-section span {
+  color: #fff;
+  font-size: 1.09em;
+}
+#ai-output {
+  background: #13151b;
+  color: #f0f0f0;
+  padding: 7px 8px 7px 12px;
+  border-radius: 4px;
+  border: 1.3px solid #23224a;
+  min-height: 35px;
+  font-size: 1em;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+#show-log {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #384b74;
+  color: #d3e4ff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 1.06em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  box-shadow: 0 2px 10px #0003;
+}
+#show-log:hover { background: #22335a; color: #fff; }
+#log-sidebar {
+  display: none;
+  position: fixed;
+  top: 0; right: 0;
+  width: 350px;
+  height: 100%;
+  background: #222;
+  color: #fff;
+  overflow-y: auto;
+  box-shadow: -2px 0 18px #000a;
+  z-index: 1200;
+  padding: 26px 24px 14px 28px;
+}
+#log-list {
+  font-family: monospace;
+  font-size: 1.07em;
+  margin-top: 8px;
+}
+#log-list li {
+  margin-bottom: 3px;
+  border-left: 2.5px solid #58ff7b;
+  padding-left: 9px;
+  color: #b4ffcb;
+}
+/* Modale fasi */
+#killchain-modal {
+  display: none;
+  position: fixed;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #21212b;
+  color: #f8fff0;
+  padding: 24px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #000a;
+  max-width: 900px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#killchain-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+#killchain-modal ul {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+#killchain-modal li {
+  margin-bottom: 16px;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+#killchain-modal button {
+  margin-top: 12px;
+  background: #39f4ab;
+  color: #1a1e24;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 18px;
+  cursor: pointer;
+}
+/* AI feedback box */
+#chat-response span.suggerimento-ai {
+  background: #1053b7;
+  color: #57f777;
+  padding: 7px 12px;
+  margin: 0 0 18px 0;
+  border-radius: 7px;
+  font-family: monospace;
+  display: inline-block;
+  font-size: 1.09em;
+  margin-top: 4px;
+}
+
+#modaleSuggerimento {
+  background: #20222a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 0 0 18px 0;
+  max-width: 950px;
+  box-shadow: 0 2px 10px #0004;
+}
+
+#chatbot {
+  background: #11131a;
+  border: 2px solid #344;
+  border-radius: 8px;
+  padding: 18px 24px;
+  margin:0 0 18px 0;
+  max-width: 950px;
+  box-shadow: 0 2px 10px #0004;
+}
+
   </style>
 </head>
 <body>
-  <h1>🔍 Fase: Ricognizione</h1>
+  <h1>
+     Piattaforma di simulazione Cyber Kill Chain
+    <button id="btn-killchain-help" title="Vedi le 7 fasi">ℹ️</button>
+  </h1>
 
   <div id="terminal">
     <pre id="output"></pre>
+    <div id="last-command-line"></div>
     <div>
       <span style="color: #0f0;">user@webshell:~$</span>
-      <input type="text" id="commandInput" autofocus>
+      <input type="text" id="commandInput" autofocus autocomplete="off" placeholder="es: nmap shopcorp.local">
     </div>
   </div>
+  <button id="show-log">📄 Vedi log sessione</button>
+  <div id="log-sidebar">
+    <h3>Log sessione comandi</h3>
+    <ul id="log-list"></ul>
+    <button onclick="document.getElementById('log-sidebar').style.display='none'" style="margin-top:20px;">Chiudi log</button>
+  </div>
+  <!-- Modale Kill Chain -->
+ <div id="killchain-modal">
+  <h3>🔒 Le 7 fasi della Cyber Kill Chain</h3>
+  <div id="killchain-grid">
+    <ul>
+      <li><b>1. Ricognizione:</b> Raccolta di informazioni sul target tramite scansioni di rete, DNS, email, metadati.<br>
+        <b>Tool:</b> <code>nmap</code>, <code>whois</code>, <code>theHarvester</code>
+      </li>
+      <li><b>2. Weaponization:</b> Creazione di un payload o exploit su misura.<br>
+        <b>Tool:</b> <code>msfvenom</code>, <code>setoolkit</code>, <code>empire</code>
+      </li>
+      <li><b>3. Delivery:</b> Invio del payload al target via rete, email, file share.<br>
+        <b>Tool:</b> <code>scp</code>, <code>sendEmail</code>, <code>smbclient</code>
+      </li>
+      <li><b>4. Exploit:</b> Esecuzione dell’exploit sfruttando vulnerabilità.<br>
+        <b>Tool:</b> <code>metasploit</code>, <code>sqlmap</code>, <code>hydra</code>
+      </li>
+    </ul>
+    <ul>
+      <li><b>5. Installation:</b> Persistenza tramite malware, crontab o servizi di sistema.<br>
+        <b>Tool:</b> <code>ssh</code>, <code>crontab</code>, <code>systemctl</code>
+      </li>
+      <li><b>6. Command & Control:</b> Canale di comunicazione con il target.<br>
+        <b>Tool:</b> <code>nc</code>, <code>ssh</code>, <code>ncat</code>
+      </li>
+      <li><b>7. Actions on Objectives:</b> Furto/esfiltrazione dati, alterazioni, accessi.<br>
+        <b>Tool:</b> <code>tar</code>, <code>rclone</code>, <code>scp</code>
+      </li>
+    </ul>
+  </div>
+  <button onclick="document.getElementById('killchain-modal').style.display='none'">Chiudi</button>
+</div>
+
+
 
   <!-- Pulsante e modale suggerimento -->
   <button id="apriSuggerimento" style="margin-bottom:10px;">Avvia suggerimento</button>
@@ -116,20 +303,36 @@
     <button id="chiudiModaleSuggerimento" style="margin-top:7px;">Chiudi</button>
   </div>
 
-  <!-- Output simulato + feedback output -->
-  <div id="ai-output-section">
-    <div>
-      <label><b>Comando:</b></label>
-      <span id="ai-command"></span>
+    <!-- Suggerimento AI e feedback comando -->
+  <div id="chatbot">
+    <h3>🤖 Chatbot AI</h3>
+    <p id="chat-response">Suggerimento del bot qui...</p>
+    <button id="show-feedback">Questo suggerimento è sbagliato</button>
+    <div id="feedback-form">
+      <p>Spiega perché il suggerimento è sbagliato:</p>
+      <textarea id="feedback-text" placeholder="Ad es.: 'Non porta alla fase successiva perché...'"></textarea>
+      <button id="send-feedback">Invia feedback</button>
     </div>
-    <div>
-      <label><b>Output simulato:</b></label>
-      <pre id="ai-output"></pre>
-    </div>
-    <button id="btn-feedback" onclick="showFeedbackForm()" style="display:none;">Segnala output errato</button>
   </div>
 
-  <div id="feedback-form-section" style="display:none; margin-top: 1em;">
+<div style="display: flex; gap: 32px; justify-content: auto; align-items: flex-start; margin-top: 24px;">
+  <!-- BOX OUTPUT SIMULATO -->
+  <div id="ai-output-section">
+    <div style="padding-top:6px;">
+      <div>
+        <label><b>Comando:</b></label>
+        <span id="ai-command"></span>
+      </div>
+      <div style="margin-top:2px;">
+        <label><b>Output simulato:</b></label>
+        <pre id="ai-output"></pre>
+      </div>
+      <button id="btn-feedback" onclick="showFeedbackForm()" style="display:none;">Segnala output errato</button>
+    </div>
+  </div>
+
+  <!-- BOX FEEDBACK -->
+  <div id="feedback-form-section" style="display:none; min-width: 360px;">
     <h4>Correggi l'output generato</h4>
     <form id="feedback-form-output" onsubmit="sendOutputFeedback(event)">
       <input type="hidden" id="feedback-fase-output">
@@ -151,18 +354,8 @@
     </form>
     <div id="feedback-status-output" style="color:green;"></div>
   </div>
+</div>
 
-  <!-- Suggerimento AI e feedback comando -->
-  <div id="chatbot">
-    <h3>🤖 Chatbot AI</h3>
-    <p id="chat-response">Suggerimento del bot qui...</p>
-    <button id="show-feedback">Questo suggerimento è sbagliato</button>
-    <div id="feedback-form">
-      <p>Spiega perché il suggerimento è sbagliato:</p>
-      <textarea id="feedback-text" placeholder="Ad es.: 'Non porta alla fase successiva perché...'"></textarea>
-      <button id="send-feedback">Invia feedback</button>
-    </div>
-  </div>
 
 <script>
   let lastSuggestion = "";
@@ -172,30 +365,34 @@
   let ultimoOutAI = "";
   let ultimaFaseAI = "";
 
-  // Terminale
+  // --- Log sessione comandi
+  let sessionLog = [];
+  let commandHistory = [];
+  let historyIndex = -1;
+
   function mostraOutput(text) {
     const out = document.getElementById("output");
     out.innerText += text + "\n";
-    out.scrollTop = out.scrollHeight;
+    setTimeout(() => { out.scrollTop = out.scrollHeight; }, 0);
+    // Log solo se è un comando utente
+    if (text.startsWith("$ ")) {
+      sessionLog.push(text);
+      aggiornaLogSidebar();
+    }
   }
 
-  function addAndRunTool(tool) {
-    fetch("/add_command", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command: tool, fase: faseCorrente })
-    })
-    .then(res => res.json())
-    .then(resp => {
-      if (resp.status === "ok") {
-        mostraOutput(`[Sistema]: Comando dinamico "${tool}" aggiunto.`);
-        executeCommand(tool);
-      } else {
-        mostraOutput(`[Sistema]: Errore durante l'aggiunta di "${tool}".`);
-      }
-    })
-    .catch(err => console.error("Errore add_command:", err));
+  function aggiornaLogSidebar() {
+    const ul = document.getElementById("log-list");
+    ul.innerHTML = "";
+    sessionLog.forEach(cmd => {
+      const li = document.createElement("li");
+      li.textContent = cmd;
+      ul.appendChild(li);
+    });
   }
+  document.getElementById("show-log").onclick = function() {
+    document.getElementById("log-sidebar").style.display = "block";
+  };
 
   function executeCommand(cmd) {
     lastCommand = cmd;
@@ -215,21 +412,47 @@
     });
   }
 
-  // Gestione invio comando (invio Enter)
+  // Gestione invio comando (invio Enter) + comando precedente + history
   function onEnter(event) {
+    const inputEl = document.getElementById("commandInput");
     if (event.key === "Enter") {
       event.preventDefault();
-      const inputEl = document.getElementById("commandInput");
-      let cmd = inputEl.value.trim().toLowerCase();
+      let cmd = inputEl.value.trim();
       if (!cmd) return;
       if (cmd === "clear") {
         document.getElementById("output").innerText = "";
         inputEl.value = "";
+        document.getElementById("last-command-line").innerText = "";
+        commandHistory = [];
+        historyIndex = -1;
+        sessionLog = [];
+        aggiornaLogSidebar();
         return;
       }
+      // Mostra il comando precedente sopra il prompt
+      document.getElementById("last-command-line").innerHTML =
+        `<span style="color:#0f0;">user@webshell:~$</span> <span style="color:#fff;">${cmd}</span>`;
       mostraOutput(`$ ${cmd}`);
+      commandHistory.push(cmd);
+      historyIndex = commandHistory.length;
       inputEl.value = "";
       executeCommand(cmd);
+    } else if (event.key === "ArrowUp") {
+      if (commandHistory.length && historyIndex > 0) {
+        historyIndex--;
+        inputEl.value = commandHistory[historyIndex];
+        event.preventDefault();
+      }
+    } else if (event.key === "ArrowDown") {
+      if (commandHistory.length && historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        inputEl.value = commandHistory[historyIndex];
+        event.preventDefault();
+      } else if (historyIndex === commandHistory.length - 1) {
+        historyIndex++;
+        inputEl.value = "";
+        event.preventDefault();
+      }
     }
   }
   document.getElementById("commandInput").addEventListener("keydown", onEnter);
@@ -273,7 +496,7 @@
     });
   };
 
-  // Mostra suggerimento
+  // Mostra suggerimento AI evidenziato
   function renderChatbotResponse(comando) {
     const chatP = document.getElementById("chat-response");
     if (!comando) {
@@ -282,14 +505,9 @@
       return;
     }
     lastSuggestion = comando;
-    chatP.innerHTML =
-      `Suggerimento: <button class="tool-btn" data-tool="${comando}">\`${comando}\`</button>`;
-    chatP.querySelectorAll(".tool-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const tool = btn.getAttribute("data-tool");
-        addAndRunTool(tool);
-      });
-    });
+    chatP.innerHTML = `
+      <span class="suggerimento-ai">🤖 Suggerimento AI: <code>${comando}</code></span>
+    `;
   }
 
   // --- FEEDBACK OUTPUT LOGIC ---
@@ -312,69 +530,51 @@
     document.getElementById("feedback-form-section").style.display = "none";
     document.getElementById("btn-feedback").style.display = "inline-block";
   }
-  function sendOutputFeedback(event) {
-    event.preventDefault();
-    const fase = document.getElementById("feedback-fase-output").value;
-    const comando = document.getElementById("feedback-comando-output").value;
-    const motivo = document.getElementById("feedback-motivo-output").value;
-    const output_corretto = document.getElementById("feedback-output-corretto-output").value;
-    const output_sbagliato = document.getElementById("feedback-output-sbagliato-output").value;
 
-    fetch("/feedback_output", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fase,
-        comando,
-        motivo,
-        output_corretto,
-        output_sbagliato,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "ok") {
-          document.getElementById("feedback-status-output").innerText =
-            "Grazie per il feedback! L'output verrà rigenerato...";
-          setTimeout(() => {
-            hideFeedbackForm();
-            document.getElementById("feedback-status-output").innerText = "";
-            rigeneraOutputAI(comando, fase); // Rigenera output dopo feedback
-          }, 1400);
-        } else {
-          document.getElementById("feedback-status-output").style.color = "red";
-          document.getElementById("feedback-status-output").innerText =
-            "Errore durante l'invio del feedback.";
-        }
-      })
-      .catch(() => {
-        document.getElementById("feedback-status-output").style.color = "red";
-        document.getElementById("feedback-status-output").innerText =
-          "Errore di connessione.";
-      });
-  }
-  function rigeneraOutputAI(cmd, fase) {
-    fetch("/add_command", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command: cmd, fase: fase })
-    })
-      .then(res => res.json())
-      .then(resp => {
-        if (resp.status === "ok") {
-          fetch("/terminal", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ command: cmd, fase: fase })
-          })
-          .then(res => res.json())
-          .then(data => {
-            mostraOutput("[Sistema]: Output rigenerato dopo feedback!");
-            aggiornaOutputAI(cmd, data.output, fase);
-          });
-        }
-      });
-  }
+ function sendOutputFeedback(event) {
+  event.preventDefault();
+  const fase = document.getElementById("feedback-fase-output").value;
+  const comando = document.getElementById("feedback-comando-output").value;
+  const motivo = document.getElementById("feedback-motivo-output").value;
+  const output_corretto = document.getElementById("feedback-output-corretto-output").value;
+  const output_sbagliato = document.getElementById("feedback-output-sbagliato-output").value;
+
+  fetch("/feedback_output", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fase,
+      comando,
+      motivo,
+      output_corretto,
+      output_sbagliato,
+    }),
+  })
+  .then((res) => res.json())
+  .then((data) => {
+    if (data.status === "ok") {
+      document.getElementById("feedback-status-output").innerText =
+        "Grazie per il feedback! L'output è stato rigenerato.";
+      setTimeout(() => {
+        hideFeedbackForm();
+        document.getElementById("feedback-status-output").innerText = "";
+        // Mostra direttamente l'output appena generato senza fare altre chiamate!
+        mostraOutput("[Sistema]: Output rigenerato dopo feedback:\n" + data.nuovo_output);
+        aggiornaOutputAI(comando, data.nuovo_output, fase);
+      }, 1400);
+    } else {
+      document.getElementById("feedback-status-output").style.color = "red";
+      document.getElementById("feedback-status-output").innerText =
+        "Errore durante l'invio del feedback.";
+    }
+  })
+  .catch(() => {
+    document.getElementById("feedback-status-output").style.color = "red";
+    document.getElementById("feedback-status-output").innerText =
+      "Errore di connessione.";
+  });
+}
+
   // --- Feedback suggerimento comando (resta come era) ---
   document.getElementById("show-feedback").onclick = () => {
     const form = document.getElementById("feedback-form");
@@ -412,6 +612,20 @@
     })
     .catch(err => console.error("Errore feedback:", err));
   };
+
+  // --- Tooltip kill chain ---
+  document.getElementById("btn-killchain-help").onclick = function() {
+    document.getElementById("killchain-modal").style.display = "block";
+  };
+
+  // Chiusura modale kill chain con Esc
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+      document.getElementById("killchain-modal").style.display = "none";
+      document.getElementById("log-sidebar").style.display = "none";
+      document.getElementById("modaleSuggerimento").style.display = "none";
+    }
+  });
 </script>
 </body>
 </html>

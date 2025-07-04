@@ -89,9 +89,6 @@ class ChatBot:
     def process_input(self, terminal_output: str, next_phase: str = "weaponization", current_phase: str = "ricognizione", comando: str = "", memoria_errori: str = "", raw_prompt: str = None):
         self._ensure_pipeline_loaded()
         
-        print("---- PROMPT INVIATO ALL'LLM ----")
-        print(prompt)
-        print("--------------------------------")
 
     # Se è stato passato un prompt completo, usalo direttamente
 
@@ -100,6 +97,10 @@ class ChatBot:
         else:
             # (opzionale: fallback o errore)
             prompt = "ERRORE: manca il prompt"
+
+        print("---- PROMPT INVIATO ALL'LLM ----")
+        print(prompt)
+        print("--------------------------------")
             
         generated = self._pipeline(
             prompt,

