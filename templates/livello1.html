@@ -233,11 +233,25 @@ input[type="text"]#commandInput:focus {
     <button id="btn-killchain-help" title="Vedi le 7 fasi">ℹ️</button>
   </h1>
 
+  <!-- SELETTORE FASE KILL CHAIN -->
+  <div style="margin-bottom: 10px;">
+    <label for="faseTerminale"><b>Fase Kill Chain:</b></label>
+    <select id="faseTerminale" style="background: #161920; color: #0f0; border:1px solid #444; border-radius:4px; padding:2px 8px; margin-left:8px;">
+      <option value="ricognizione">Ricognizione</option>
+      <option value="weaponization">Weaponization</option>
+      <option value="delivery">Delivery</option>
+      <option value="exploit">Exploit</option>
+      <option value="installation">Installation</option>
+      <option value="command_and_control">Command and Control</option>
+      <option value="actions_on_objectives">Actions on Objectives</option>
+    </select>
+  </div>
+
   <div id="terminal">
     <pre id="output"></pre>
     <div id="last-command-line"></div>
-    <div>
-      <span style="color: #0f0;">user@webshell:~$</span>
+   <div>
+      <span id="terminal-prompt" style="color: #0f0;">user@webshell:~$</span>
       <input type="text" id="commandInput" autofocus autocomplete="off" placeholder="es: nmap shopcorp.local">
     </div>
   </div>
@@ -279,8 +293,6 @@ input[type="text"]#commandInput:focus {
   </div>
   <button onclick="document.getElementById('killchain-modal').style.display='none'">Chiudi</button>
 </div>
-
-
 
   <!-- Pulsante e modale suggerimento -->
   <button id="apriSuggerimento" style="margin-bottom:10px;">Avvia suggerimento</button>
@@ -356,19 +368,41 @@ input[type="text"]#commandInput:focus {
   </div>
 </div>
 
-
 <script>
   let lastSuggestion = "";
   let lastCommand = "";
-  // --- FEEDBACK OUTPUT STATE
   let ultimoCmdAI = "";
   let ultimoOutAI = "";
   let ultimaFaseAI = "";
 
-  // --- Log sessione comandi
   let sessionLog = [];
   let commandHistory = [];
   let historyIndex = -1;
+
+  // --- GESTIONE FASE KILL CHAIN + PROMPT DINAMICO ---
+  let faseCorrente = document.getElementById("faseTerminale").value;
+
+  // Funzione che aggiorna il prompt a seconda della fase corrente
+function aggiornaPrompt(fase) {
+    const promptSpan = document.getElementById("terminal-prompt");
+    // Prompt REMOTO SOLO da Installation in poi!
+    if (["installation", "actions_on_objectives"].includes(fase)) {
+      promptSpan.textContent = "compromised@victim:~$";
+      promptSpan.style.color = "#ff5959";
+    } else {
+      promptSpan.textContent = "user@webshell:~$";
+      promptSpan.style.color = "#0f0";
+    }
+}
+
+
+  // Aggiorna prompt all'avvio
+  aggiornaPrompt(faseCorrente);
+
+  document.getElementById("faseTerminale").addEventListener("change", function() {
+    faseCorrente = this.value;
+    aggiornaPrompt(faseCorrente);
+  });
 
   function mostraOutput(text) {
     const out = document.getElementById("output");
@@ -380,6 +414,7 @@ input[type="text"]#commandInput:focus {
       aggiornaLogSidebar();
     }
   }
+
 
   function aggiornaLogSidebar() {
     const ul = document.getElementById("log-list");
@@ -393,26 +428,37 @@ input[type="text"]#commandInput:focus {
   document.getElementById("show-log").onclick = function() {
     document.getElementById("log-sidebar").style.display = "block";
   };
+  
 
-  function executeCommand(cmd) {
-    lastCommand = cmd;
-    fetch("/terminal", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ command: cmd, fase: faseCorrente })
-    })
-    .then(res => res.json())
-    .then(data => {
-      mostraOutput(data.output);
-      aggiornaOutputAI(cmd, data.output, faseCorrente); // AGGIORNA OUTPUT PER FEEDBACK!
-    })
-    .catch(err => {
-      console.error("Errore terminal:", err);
-      mostraOutput("[Errore di sistema]");
-    });
-  }
+function executeCommand(cmd) {
+  lastCommand = cmd;
+  fetch("/terminal", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ command: cmd, fase: faseCorrente })
+  })
+  .then(res => res.json())
+  .then(data => {
+    mostraOutput(data.output);
+    aggiornaOutputAI(cmd, data.output, faseCorrente);
 
-  // Gestione invio comando (invio Enter) + comando precedente + history
+    // Se siamo nell'ultima fase e il comando è quello finale di exfiltration...
+    if (faseCorrente === "actions_on_objectives" ) {
+      // Mostra conclusione, poi torna al prompt attaccante
+      setTimeout(() => {
+        faseCorrente = "ricognizione";
+        aggiornaPrompt(faseCorrente);
+      }, 600); // Attendi un attimo per chiarezza UX
+    } else {
+      aggiornaPrompt(faseCorrente);
+    }
+  })
+  .catch(err => {
+    console.error("Errore terminal:", err);
+    mostraOutput("[Errore di sistema]");
+  });
+}
+
   function onEnter(event) {
     const inputEl = document.getElementById("commandInput");
     if (event.key === "Enter") {
@@ -430,8 +476,10 @@ input[type="text"]#commandInput:focus {
         return;
       }
       // Mostra il comando precedente sopra il prompt
-      document.getElementById("last-command-line").innerHTML =
-        `<span style="color:#0f0;">user@webshell:~$</span> <span style="color:#fff;">${cmd}</span>`;
+     document.getElementById("last-command-line").innerHTML =
+  `<span id="prev-prompt" style="color:${["installation", "command_and_control", "actions_on_objectives"].includes(faseCorrente) ? "#ff5959" : "#0f0"};">
+    ${["installation", "command_and_control", "actions_on_objectives"].includes(faseCorrente) ? "compromised@victim:~$" : "user@webshell:~$"}
+  </span> <span style="color:#fff;">${cmd}</span>`;
       mostraOutput(`$ ${cmd}`);
       commandHistory.push(cmd);
       historyIndex = commandHistory.length;
@@ -458,19 +506,21 @@ input[type="text"]#commandInput:focus {
   document.getElementById("commandInput").addEventListener("keydown", onEnter);
 
   // --- Suggerimento AI (NUOVO FLUSSO SOLO SU RICHIESTA) ---
-  let faseCorrente = "ricognizione"; // default, viene aggiornata quando parte la richiesta suggerimento
-
-  // Mostra/chiudi la modale
+  // Sincronizza faseCorrente tra modale e select globale!
   document.getElementById("apriSuggerimento").onclick = function() {
+    // Aggiorna la modale con la fase globale selezionata
+    document.getElementById("faseSelect").value = faseCorrente;
     document.getElementById("modaleSuggerimento").style.display = "block";
   };
   document.getElementById("chiudiModaleSuggerimento").onclick = function() {
     document.getElementById("modaleSuggerimento").style.display = "none";
   };
 
-  // Invia richiesta suggerimento AI SOLO su click
   document.getElementById("inviaSuggerimento").onclick = function() {
     faseCorrente = document.getElementById("faseSelect").value;
+    // Aggiorna anche la select principale (sincronizzazione bidirezionale)
+    document.getElementById("faseTerminale").value = faseCorrente;
+
     const promptCustom = document.getElementById("promptCustom").value.trim();
     const terminale = document.getElementById("output").innerText;
 

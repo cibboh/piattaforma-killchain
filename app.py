@@ -17,19 +17,22 @@ Agisci come un terminale Linux Ubuntu 20.04. Simula in modo realistico l’esecu
 - Obiettivo: generare l’output realistico per un comando ricevuto.
 - Comando: {COMANDO_INPUT}
 
-
+### Correzioni storiche disponibili
 {MEMORIA_ERRORI}
 
 ### Istruzioni
 - Non inserire testo decorativo.
 - Non scrivere spiegazioni.
-- NON ripetere il comando (`{COMANDO_INPUT}`).
+- NON scrivere nuovamente il comando.
 - Simula ciò che appare su un terminale REALE Linux 20.04.
 - Nessun blocco markdown (no ```)
 - L’output deve essere coerente, realistico e fedele al comportamento reale del comando.
 
 Rispondi con il solo output:
+<|eot_id|>
+<|start_header_id|>assistant<|end_header_id|>
 """
+
 
 def build_tool_section(tool_list, tool_details_dict):
     """
@@ -146,6 +149,9 @@ def feedback_output():
     }
     save_output_feedback(feedback_obj)
 
+    if comando in dynamic_commands:
+        del dynamic_commands[comando]
+
     nuovo_output = genera_output_command(comando, fase)  # Genera e salva output
 
     # Restituisci il NUOVO output al frontend!
@@ -181,7 +187,7 @@ def costruisci_memoria_output_feedback(fase, comando):
     for fb in feedbacks:
         if (
             fb.get("fase", "").strip().lower() == fase.strip().lower()
-            and tokens_similar(token_cmd, tokenize_cmd(fb.get("comando", "")), 0.6)
+            and tokens_similar(token_cmd, tokenize_cmd(fb.get("comando", "")), 0.4)
         ):
             lines.append(
                 f"↪ Guida: {fb['motivo'].strip()}"
@@ -205,10 +211,21 @@ def livello1():
 
 
 def costruisci_output_cumulativo():
-    testo = "### Output delle fasi precedenti:\n"
+    blocchi = []
     for elem in output_storici:
-        testo += f"[{elem['fase']}] $ {elem['comando']}\n{elem['output']}\n\n"
-    return testo
+        blocchi.append(
+            f"[{elem['fase']}] $ {elem['comando']}\n{elem['output']}\n" +
+            "-" * 50
+        )
+    return "\n\n".join(blocchi)
+
+def get_conclusione_simulazione():
+   
+    return (
+        "----------------------------------------------------------------\n"
+        "Attacco completato!\n\n"
+        "I dati sono stati esfiltrati con successo\n"
+    )
 
 def get_ultimo_output_valido(fase_corrente):
     # Cerca l'ultimo output confermato per questa fase
@@ -227,21 +244,20 @@ def conferma_output_automaticamente():
         comando_temp = output_temporaneo["comando"].strip().lower()
         fase_temp = output_temporaneo["fase"]
 
-        # Rimuovi TUTTI gli output storici per stesso comando e fase (case insensitive!)
-        output_storici[:] = [
-            o for o in output_storici
-            if not (
-                o["fase"] == fase_temp and
-                o["comando"].strip().lower() == comando_temp
-            )
-        ]
-        
-        # Aggiungi il nuovo output pulito
-        output_storici.append(output_temporaneo)
+        # Cerca se c'è già un output identico nella stessa fase
+        found = False
+        for idx, o in enumerate(output_storici):
+            if o["fase"] == fase_temp and o["comando"].strip().lower() == comando_temp:
+                output_storici[idx] = output_temporaneo  # Aggiorna solo quello!
+                found = True
+                break
+        if not found:
+            output_storici.append(output_temporaneo)
 
         # Aggiorna sempre dynamic_commands
         dynamic_commands[output_temporaneo["comando"]] = output_temporaneo["output"]
         output_temporaneo = {}
+
 
 
 @app.route('/terminal', methods=['POST'])
@@ -249,12 +265,22 @@ def terminal():
     comando = request.json.get('command', '').strip().lower()
     fase = request.json.get('fase', 'ricognizione').strip().lower()
     fase_info = get_fase_info(static_scenario, fase)
+
     if comando in dynamic_commands:
-     output = dynamic_commands[comando]
+        output = dynamic_commands[comando]
     else:
-        output = genera_output_command(comando, fase) 
+        output = genera_output_command(comando, fase)
+    
+    # AGGIUNTA: mostra la conclusione se siamo nell'ultima fase
+    conclusione = ""
+    if fase == "actions_on_objectives":
+        conclusione = get_conclusione_simulazione()
+        # Puoi decidere se mostrare SOLO la conclusione, oppure aggiungerla all'output:
+        # output = output + "\n\n" + conclusione
+        output = conclusione  # Solo la conclusione, senza output terminale (come reale!)
 
     return jsonify({"output": output})
+
 
 
 
@@ -283,8 +309,7 @@ def chatbot():
     prompt = prompt.replace("{MEMORIA_ERRORI}", memoria or "Nessun errore precedente segnalato.")
     prompt = prompt.replace("{TOOL_CONSENTITI}", ', '.join(tool_consentiti))
     prompt = prompt.replace("{DESCRIZIONI_TOOL}", descrizioni_tool)
-
-    prompt = prompt_cumulativo + "\n" + prompt
+    prompt = prompt.replace("{OUTPUT_PRECEDENTI}", prompt_cumulativo or "Nessun output precedente")
 
     if prompt_custom:
         prompt += f"\nRichiesta utente: {prompt_custom}\n"

